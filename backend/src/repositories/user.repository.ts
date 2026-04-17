@@ -14,6 +14,20 @@ export class UserRepository {
     });
   }
 
+  async findAll(role?: "ADMIN" | "BARBER") {
+    return prisma.user.findMany({
+      where: role ? { role } : {},
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
+      orderBy: { name: "asc" },
+    });
+  }
+
   async create(data: Prisma.UserCreateInput) {
     return prisma.user.create({
       data,
