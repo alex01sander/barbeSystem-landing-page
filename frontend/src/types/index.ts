@@ -52,18 +52,44 @@ export interface Appointment {
   };
 }
 
-export interface CreateClientDTO {
-  name: string;
-  phone: string;
-  email?: string;
-  birthDate?: string;
-  notes?: string;
+export type TransactionType = 'INCOME' | 'EXPENSE';
+export type TransactionCategory = 'SERVICE' | 'PRODUCT' | 'SALARY' | 'RENT' | 'SUPPLY' | 'OTHER';
+export type PaymentMethod = 'CASH' | 'PIX' | 'CREDIT_CARD' | 'DEBIT_CARD';
+
+export interface FinancialTransaction {
+  id: string;
+  type: TransactionType;
+  category: TransactionCategory;
+  description: string;
+  amount: number;
+  date: string;
+  paymentMethod?: PaymentMethod;
+  appointmentId?: string;
+  client?: { name: string };
+  service?: { name: string };
 }
 
-export interface UpdateClientDTO {
-  name?: string;
-  phone?: string;
-  email?: string;
-  birthDate?: string;
-  notes?: string;
+export interface FinancialSummary {
+  totalIncomes: number;
+  totalExpenses: number;
+  balance: number;
+  period: {
+    start: string;
+    end: string;
+  };
+}
+
+export interface FinancialReport {
+  category: TransactionCategory;
+  type: TransactionType;
+  total: number;
+}
+
+export interface CreateTransactionDTO {
+  type: TransactionType;
+  category: TransactionCategory;
+  description: string;
+  amount: number;
+  date: string;
+  paymentMethod?: PaymentMethod;
 }

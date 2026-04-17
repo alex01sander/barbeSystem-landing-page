@@ -8,7 +8,11 @@ import {
   CreateClientDTO,
   UpdateClientDTO,
   CreateServiceDTO,
-  UpdateServiceDTO
+  UpdateServiceDTO,
+  FinancialTransaction,
+  FinancialSummary,
+  FinancialReport,
+  CreateTransactionDTO
 } from "@/types";
 
 export async function getBarbers(): Promise<User[]> {
@@ -66,7 +70,35 @@ export async function createAppointment(appointmentData: CreateAppointmentDTO): 
   return data;
 }
 
-export async function updateAppointmentStatus(id: string, status: string) {
+export async function updateAppointmentStatus(id: string, status: string): Promise<Appointment> {
   const { data } = await api.patch(`/appointments/${id}/status`, { status });
+  return data;
+}
+
+/* FINANCIAL METHODS */
+
+export async function getFinancialSummary(start: string, end: string): Promise<FinancialSummary> {
+  const { data } = await api.get("/financial/summary", {
+    params: { start, end }
+  });
+  return data;
+}
+
+export async function getFinancialReports(start: string, end: string): Promise<FinancialReport[]> {
+  const { data } = await api.get("/financial/reports", {
+    params: { start, end }
+  });
+  return data;
+}
+
+export async function getTransactions(start: string, end: string): Promise<FinancialTransaction[]> {
+  const { data } = await api.get("/financial", {
+    params: { start, end }
+  });
+  return data;
+}
+
+export async function createTransaction(transactionData: CreateTransactionDTO): Promise<FinancialTransaction> {
+  const { data } = await api.post("/financial", transactionData);
   return data;
 }
