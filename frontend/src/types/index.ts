@@ -7,6 +7,27 @@ export interface User {
   role: 'ADMIN' | 'BARBER';
 }
 
+export interface Barber {
+  id: string;
+  name: string;
+  photoUrl?: string;
+  age?: number;
+  isActive: boolean;
+}
+
+export interface CreateBarberDTO {
+  name: string;
+  photoUrl?: string;
+  age?: number;
+}
+
+export interface UpdateBarberDTO {
+  name?: string;
+  photoUrl?: string;
+  age?: number;
+  isActive?: boolean;
+}
+
 export interface Client {
   id: string;
   name: string;
@@ -52,6 +73,22 @@ export interface Appointment {
   };
 }
 
+export interface CreateClientDTO {
+  name: string;
+  phone: string;
+  email?: string;
+  birthDate?: string;
+  notes?: string;
+}
+
+export interface UpdateClientDTO {
+  name?: string;
+  phone?: string;
+  email?: string;
+  birthDate?: string;
+  notes?: string;
+}
+
 export type TransactionType = 'INCOME' | 'EXPENSE';
 export type TransactionCategory = 'SERVICE' | 'PRODUCT' | 'SALARY' | 'RENT' | 'SUPPLY' | 'OTHER';
 export type PaymentMethod = 'CASH' | 'PIX' | 'CREDIT_CARD' | 'DEBIT_CARD';
@@ -92,4 +129,26 @@ export interface CreateTransactionDTO {
   amount: number;
   date: string;
   paymentMethod?: PaymentMethod;
+}
+
+export interface CreateUserDTO {
+  name: string;
+  email: string;
+  password?: string;
+  role: 'ADMIN' | 'BARBER';
+}
+
+export interface UpdateUserDTO {
+  name?: string;
+  email?: string;
+  password?: string;
+  role?: 'ADMIN' | 'BARBER';
+}
+
+export interface CreateAppointmentDTO {
+  clientId: string;
+  barberId: string;
+  serviceId: string;
+  date: string;
+  notes?: string;
 }

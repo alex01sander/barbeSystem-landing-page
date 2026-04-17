@@ -1,7 +1,7 @@
 // ============================================================
 //  Barber System — Prisma Schema
-//  Entidades: User, Client, Service, Appointment,
-//             FinancialTransaction, BarberSchedule
+//  Entidades: User (Admins), Barber (Professionals), Client, 
+//             Service, Appointment, FinancialTransaction
 // ============================================================
 
 generator client {
@@ -24,7 +24,7 @@ enum Role {
 
 enum AppointmentStatus {
   PENDING    // aguardando confirmação
-  CONFIRMED  // confirmado pelo barbeiro
+  CONFIRMED  // confirmado
   COMPLETED  // atendimento concluído
   CANCELLED  // cancelado
   NO_SHOW    // cliente não compareceu
@@ -52,8 +52,7 @@ enum PaymentMethod {
 }
 
 // ─────────────────────────────────────────────
-//  USER
-//  Representa admins e barbeiros do sistema
+//  USER (Administradores do Sistema)
 // ─────────────────────────────────────────────
 
 model User {
@@ -61,24 +60,38 @@ model User {
   name      String
   email     String   @unique
   password  String
-  role      Role     @default(BARBER)
-  phone     String?
-  avatarUrl String?
-  isActive  Boolean  @default(true)
+  role      Role     @default(ADMIN)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relações
-  appointments         Appointment[]         @relation("BarberAppointments")
-  barberSchedules      BarberSchedule[]
   financialTransactions FinancialTransaction[] @relation("UserTransactions")
 
   @@map("users")
 }
 
 // ─────────────────────────────────────────────
+//  BARBER (Profissionais da Barbearia)
+// ─────────────────────────────────────────────
+
+model Barber {
+  id        String   @id @default(uuid())
+  name      String
+  photoUrl  String?
+  age       Int?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  appointments    Appointment[]    @relation("BarberAppointments")
+  barberSchedules BarberSchedule[]
+
+  @@map("barbers")
+}
+
+// ─────────────────────────────────────────────
 //  CLIENT
-//  Clientes que realizam agendamentos
 // ─────────────────────────────────────────────
 
 model Client {
@@ -99,7 +112,6 @@ model Client {
 
 // ─────────────────────────────────────────────
 //  SERVICE
-//  Catálogo de serviços da barbearia
 // ─────────────────────────────────────────────
 
 model Service {
@@ -120,7 +132,6 @@ model Service {
 
 // ─────────────────────────────────────────────
 //  APPOINTMENT
-//  Agendamento de cliente com barbeiro
 // ─────────────────────────────────────────────
 
 model Appointment {
@@ -137,7 +148,7 @@ model Appointment {
 
   // Relações
   client  Client  @relation(fields: [clientId], references: [id])
-  barber  User    @relation("BarberAppointments", fields: [barberId], references: [id])
+  barber  Barber  @relation("BarberAppointments", fields: [barberId], references: [id])
   service Service @relation(fields: [serviceId], references: [id])
 
   financialTransaction FinancialTransaction?
@@ -147,7 +158,6 @@ model Appointment {
 
 // ─────────────────────────────────────────────
 //  FINANCIAL TRANSACTION
-//  Registro de entradas e saídas financeiras
 // ─────────────────────────────────────────────
 
 model FinancialTransaction {
@@ -172,7 +182,6 @@ model FinancialTransaction {
 
 // ─────────────────────────────────────────────
 //  BARBER SCHEDULE
-//  Define os dias/horários de cada barbeiro
 // ─────────────────────────────────────────────
 
 model BarberSchedule {
@@ -184,9 +193,8 @@ model BarberSchedule {
   isWorking  Boolean @default(true)
 
   // Relações
-  barber User @relation(fields: [barberId], references: [id])
+  barber Barber @relation(fields: [barberId], references: [id])
 
   @@unique([barberId, dayOfWeek])
   @@map("barber_schedules")
 }
-

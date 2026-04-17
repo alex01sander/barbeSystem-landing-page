@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { UserController } from "../controllers/user.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
+import { ensureAdmin } from "../middlewares/role.middleware";
 
 const router = Router();
 const userController = new UserController();
@@ -10,5 +11,9 @@ router.use(authMiddleware);
 
 router.get("/", userController.index);
 router.get("/:id", userController.show);
+
+// Cadastro e edição requerem role ADMIN
+router.post("/", ensureAdmin, userController.create);
+router.put("/:id", ensureAdmin, userController.update);
 
 export { router as userRoutes };

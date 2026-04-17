@@ -7,11 +7,11 @@ const financialService = new FinancialService();
 export class FinancialController {
   async index(req: Request, res: Response) {
     try {
-      const { dateStart, dateEnd, type } = req.query;
+      const { dateStart, dateEnd, start, end, type } = req.query;
       
       const transactions = await financialService.list({
-        dateStart: dateStart as string,
-        dateEnd: dateEnd as string,
+        dateStart: (dateStart || start) as string,
+        dateEnd: (dateEnd || end) as string,
         type: type as TransactionType
       });
 
@@ -34,13 +34,15 @@ export class FinancialController {
 
   async summary(req: Request, res: Response) {
     try {
-      const { dateStart, dateEnd } = req.query;
+      const { dateStart, dateEnd, start, end } = req.query;
+      const startFinal = (dateStart || start) as string;
+      const endFinal = (dateEnd || end) as string;
 
-      if (!dateStart || !dateEnd) {
+      if (!startFinal || !endFinal) {
         return res.status(400).json({ error: "Data inicial e final são obrigatórias" });
       }
 
-      const summary = await financialService.getSummary(dateStart as string, dateEnd as string);
+      const summary = await financialService.getSummary(startFinal, endFinal);
       return res.json(summary);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Erro ao gerar resumo";
@@ -50,13 +52,15 @@ export class FinancialController {
 
   async reports(req: Request, res: Response) {
     try {
-      const { dateStart, dateEnd } = req.query;
+      const { dateStart, dateEnd, start, end } = req.query;
+      const startFinal = (dateStart || start) as string;
+      const endFinal = (dateEnd || end) as string;
 
-      if (!dateStart || !dateEnd) {
+      if (!startFinal || !endFinal) {
         return res.status(400).json({ error: "Data inicial e final são obrigatórias" });
       }
 
-      const reports = await financialService.getReports(dateStart as string, dateEnd as string);
+      const reports = await financialService.getReports(startFinal, endFinal);
       return res.json(reports);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "Erro ao gerar relatório";

@@ -8,7 +8,8 @@ import {
   Scissors, 
   Calendar, 
   LogOut,
-  DollarSign
+  DollarSign,
+  UserCog
 } from "lucide-react";
 import Link from "next/link";
 
@@ -80,6 +81,12 @@ export default function DashboardLayout({
             active={pathname === "/dashboard/services"} 
           />
           <NavItem 
+            href="/dashboard/team" 
+            icon={<UserCog />} 
+            label="Equipe" 
+            active={pathname === "/dashboard/team"} 
+          />
+          <NavItem 
             href="/dashboard/financial" 
             icon={<DollarSign />} 
             label="Financeiro" 
@@ -104,7 +111,8 @@ export default function DashboardLayout({
           <h2 className="text-xl font-semibold">
             {pathname === "/dashboard" ? "Dashboard" : 
              pathname.includes("appointments") ? "Agenda" : 
-             pathname.includes("clients") ? "Clientes" : "Gestão"}
+             pathname.includes("clients") ? "Clientes" : 
+             pathname.includes("team") ? "Equipe" : "Gestão"}
           </h2>
           <div className="flex items-center gap-4">
              <div className="text-right hidden sm:block">

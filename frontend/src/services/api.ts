@@ -12,13 +12,53 @@ import {
   FinancialTransaction,
   FinancialSummary,
   FinancialReport,
-  CreateTransactionDTO
+  CreateTransactionDTO,
+  CreateUserDTO,
+  UpdateUserDTO,
+  Barber,
+  CreateBarberDTO,
+  UpdateBarberDTO
 } from "@/types";
 
-export async function getBarbers(): Promise<User[]> {
-  const { data } = await api.get("/users?role=BARBER");
+/* BARBER METHODS */
+
+export async function getBarbers(): Promise<Barber[]> {
+  const { data } = await api.get("/barbers");
   return data;
 }
+
+export async function createBarber(barberData: CreateBarberDTO): Promise<Barber> {
+  const { data } = await api.post("/barbers", barberData);
+  return data;
+}
+
+export async function updateBarber(id: string, barberData: UpdateBarberDTO): Promise<Barber> {
+  const { data } = await api.put(`/barbers/${id}`, barberData);
+  return data;
+}
+
+export async function deleteBarber(id: string): Promise<void> {
+  await api.delete(`/barbers/${id}`);
+}
+
+/* USER METHODS (Admins) */
+
+export async function getAllUsers(): Promise<User[]> {
+  const { data } = await api.get("/users");
+  return data;
+}
+
+export async function createUser(userData: CreateUserDTO): Promise<User> {
+  const { data } = await api.post("/users", userData);
+  return data;
+}
+
+export async function updateUser(id: string, userData: UpdateUserDTO): Promise<User> {
+  const { data } = await api.put(`/users/${id}`, userData);
+  return data;
+}
+
+/* CLIENT METHODS */
 
 export async function getClients(): Promise<Client[]> {
   const { data } = await api.get("/clients");
@@ -39,6 +79,8 @@ export async function deleteClient(id: string): Promise<void> {
   await api.delete(`/clients/${id}`);
 }
 
+/* SERVICE METHODS */
+
 export async function getServices(): Promise<Service[]> {
   const { data } = await api.get("/services");
   return data;
@@ -57,6 +99,8 @@ export async function updateService(id: string, serviceData: UpdateServiceDTO): 
 export async function deleteService(id: string): Promise<void> {
   await api.delete(`/services/${id}`);
 }
+
+/* APPOINTMENT METHODS */
 
 export async function getAppointments(date?: string): Promise<Appointment[]> {
   const { data } = await api.get("/appointments", {
