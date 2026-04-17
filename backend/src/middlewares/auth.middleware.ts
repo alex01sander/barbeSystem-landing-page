@@ -1,11 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-
-interface TokenPayload {
-  id: string;
-  role: string;
-  name: string;
-}
+import { TokenPayload } from "../utils/types";
 
 export const authMiddleware = (
   req: Request,
@@ -25,7 +20,7 @@ export const authMiddleware = (
     const decoded = jwt.verify(token, secret) as TokenPayload;
 
     // Attach user data to request
-    (req as any).user = decoded;
+    req.user = decoded;
 
     return next();
   } catch (err) {

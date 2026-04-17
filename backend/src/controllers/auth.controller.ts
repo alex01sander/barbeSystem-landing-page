@@ -15,8 +15,9 @@ export class AuthController {
       const result = await authService.login({ email, password });
 
       return res.json(result);
-    } catch (error: any) {
-      return res.status(401).json({ error: error.message });
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Ocorreu um erro inesperado";
+      return res.status(401).json({ error: message });
     }
   }
 }
