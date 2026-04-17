@@ -17,8 +17,46 @@ import {
   UpdateUserDTO,
   Barber,
   CreateBarberDTO,
-  UpdateBarberDTO
+  UpdateBarberDTO,
+  Product,
+  CreateProductDTO,
+  UpdateProductDTO,
+  Sale,
+  CreateSaleDTO
 } from "@/types";
+
+/* PRODUCT METHODS */
+
+export async function getProducts(): Promise<Product[]> {
+  const { data } = await api.get("/products");
+  return data;
+}
+
+export async function createProduct(productData: CreateProductDTO): Promise<Product> {
+  const { data } = await api.post("/products", productData);
+  return data;
+}
+
+export async function updateProduct(id: string, productData: UpdateProductDTO): Promise<Product> {
+  const { data } = await api.put(`/products/${id}`, productData);
+  return data;
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+  await api.delete(`/products/${id}`);
+}
+
+/* SALE METHODS (PDV) */
+
+export async function createSale(saleData: CreateSaleDTO): Promise<Sale> {
+  const { data } = await api.post("/sales", saleData);
+  return data;
+}
+
+export async function getSales(): Promise<Sale[]> {
+  const { data } = await api.get("/sales");
+  return data;
+}
 
 /* BARBER METHODS */
 

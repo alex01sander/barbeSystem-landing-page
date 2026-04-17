@@ -9,7 +9,9 @@ import {
   Calendar, 
   LogOut,
   DollarSign,
-  UserCog
+  UserCog,
+  Store,
+  ShoppingBag
 } from "lucide-react";
 import Link from "next/link";
 
@@ -92,6 +94,18 @@ export default function DashboardLayout({
             label="Financeiro" 
             active={pathname === "/dashboard/financial"} 
           />
+          <NavItem 
+            href="/dashboard/pdv" 
+            icon={<ShoppingBag />} 
+            label="PDV (Vendas)" 
+            active={pathname === "/dashboard/pdv"} 
+          />
+          <NavItem 
+            href="/dashboard/products" 
+            icon={<Store />} 
+            label="Produtos" 
+            active={pathname === "/dashboard/products"} 
+          />
         </nav>
 
         <div className="p-4 border-t border-white/5">
@@ -112,6 +126,8 @@ export default function DashboardLayout({
             {pathname === "/dashboard" ? "Dashboard" : 
              pathname.includes("appointments") ? "Agenda" : 
              pathname.includes("clients") ? "Clientes" : 
+             pathname.includes("products") ? "Produtos" : 
+             pathname.includes("pdv") ? "Ponto de Venda" : 
              pathname.includes("team") ? "Equipe" : "Gestão"}
           </h2>
           <div className="flex items-center gap-4">

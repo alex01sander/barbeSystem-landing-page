@@ -7,6 +7,8 @@ import { appointmentRoutes } from "./routes/appointment.routes";
 import { financialRoutes } from "./routes/financial.routes";
 import { userRoutes } from "./routes/user.routes";
 import { barberRoutes } from "./routes/barber.routes";
+import { productRoutes } from "./routes/product.routes";
+import { saleRoutes } from "./routes/sale.routes";
 
 const app = express();
 
@@ -21,6 +23,8 @@ app.use("/appointments", appointmentRoutes);
 app.use("/financial", financialRoutes);
 app.use("/users", userRoutes);
 app.use("/barbers", barberRoutes);
+app.use("/products", productRoutes);
+app.use("/sales", saleRoutes);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });

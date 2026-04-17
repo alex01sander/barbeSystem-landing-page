@@ -1,7 +1,7 @@
 // ============================================================
 //  Barber System — Prisma Schema
 //  Entidades: User (Admins), Barber (Professionals), Client, 
-//             Service, Appointment, FinancialTransaction
+//             Service, Product, Sale, Appointment, FinancialTransaction
 // ============================================================
 
 generator client {
@@ -42,6 +42,7 @@ enum TransactionCategory {
   RENT     // aluguel
   SUPPLY   // insumos / materiais
   OTHER    // outros
+  PDV      // venda via ponto de venda
 }
 
 enum PaymentMethod {
@@ -86,6 +87,7 @@ model Barber {
   // Relações
   appointments    Appointment[]    @relation("BarberAppointments")
   barberSchedules BarberSchedule[]
+  sales           Sale[]
 
   @@map("barbers")
 }
@@ -131,6 +133,66 @@ model Service {
 }
 
 // ─────────────────────────────────────────────
+//  PRODUCT (Estoque e Catálogo)
+// ─────────────────────────────────────────────
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  stock       Int      @default(0)
+  unit        String   @default("un")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  saleItems   SaleItem[]
+
+  @@map("products")
+}
+
+// ─────────────────────────────────────────────
+//  SALE (PDV)
+// ─────────────────────────────────────────────
+
+model Sale {
+  id            String   @id @default(uuid())
+  barberId      String
+  paymentMethod String
+  total         Decimal  @db.Decimal(10, 2)
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  barber        Barber   @relation(fields: [barberId], references: [id])
+  items         SaleItem[]
+  transaction   FinancialTransaction?
+
+  @@map("sales")
+}
+
+// ─────────────────────────────────────────────
+//  SALE ITEM (Itens da Venda)
+// ─────────────────────────────────────────────
+
+model SaleItem {
+  id         String   @id @default(uuid())
+  saleId     String
+  type       String   // "SERVICE" | "PRODUCT"
+  serviceId  String?
+  productId  String?
+  name       String   // nome salvo no momento da venda
+  price      Decimal  @db.Decimal(10, 2) // preço salvo no momento da venda
+  quantity   Int      @default(1)
+  subtotal   Decimal  @db.Decimal(10, 2)
+
+  sale       Sale     @relation(fields: [saleId], references: [id])
+  product    Product? @relation(fields: [productId], references: [id])
+
+  @@map("sale_items")
+}
+
+// ─────────────────────────────────────────────
 //  APPOINTMENT
 // ─────────────────────────────────────────────
 
@@ -169,13 +231,15 @@ model FinancialTransaction {
   date          DateTime
   paymentMethod PaymentMethod?
   appointmentId String?             @unique
+  saleId        String?             @unique
   userId        String?
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
 
   // Relações
-  appointment Appointment? @relation(fields: [appointmentId], references: [id])
-  user        User?        @relation("UserTransactions", fields: [userId], references: [id])
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  sale          Sale?        @relation(fields: [saleId], references: [id])
+  user          User?        @relation("UserTransactions", fields: [userId], references: [id])
 
   @@map("financial_transactions")
 }

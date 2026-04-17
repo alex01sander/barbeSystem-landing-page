@@ -56,6 +56,76 @@ export interface UpdateServiceDTO {
   isActive?: boolean;
 }
 
+/* PRODUCT TYPES */
+
+export interface Product {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  stock: number;
+  unit: string;
+  isActive: boolean;
+}
+
+export interface CreateProductDTO {
+  name: string;
+  description?: string;
+  price: number;
+  stock: number;
+  unit?: string;
+}
+
+export interface UpdateProductDTO {
+  name?: string;
+  description?: string;
+  price?: number;
+  stock?: number;
+  unit?: string;
+  isActive?: boolean;
+}
+
+/* SALE TYPES */
+
+export interface SaleItem {
+  id: string;
+  saleId: string;
+  type: 'SERVICE' | 'PRODUCT';
+  serviceId?: string;
+  productId?: string;
+  name: string;
+  price: number;
+  quantity: number;
+  subtotal: number;
+}
+
+export interface Sale {
+  id: string;
+  barberId: string;
+  paymentMethod: string;
+  total: number;
+  notes?: string;
+  createdAt: string;
+  barber?: { id: string, name: string };
+  items?: SaleItem[];
+}
+
+export interface CreateSaleDTO {
+  barberId: string;
+  paymentMethod: string;
+  notes?: string;
+  items: {
+    type: 'SERVICE' | 'PRODUCT';
+    serviceId?: string;
+    productId?: string;
+    name: string;
+    price: number;
+    quantity: number;
+  }[];
+}
+
+/* END SALE TYPES */
+
 export interface Appointment {
   id: string;
   clientId: string;
@@ -90,7 +160,7 @@ export interface UpdateClientDTO {
 }
 
 export type TransactionType = 'INCOME' | 'EXPENSE';
-export type TransactionCategory = 'SERVICE' | 'PRODUCT' | 'SALARY' | 'RENT' | 'SUPPLY' | 'OTHER';
+export type TransactionCategory = 'SERVICE' | 'PRODUCT' | 'SALARY' | 'RENT' | 'SUPPLY' | 'OTHER' | 'PDV';
 export type PaymentMethod = 'CASH' | 'PIX' | 'CREDIT_CARD' | 'DEBIT_CARD';
 
 export interface FinancialTransaction {
@@ -102,6 +172,7 @@ export interface FinancialTransaction {
   date: string;
   paymentMethod?: PaymentMethod;
   appointmentId?: string;
+  saleId?: string;
   client?: { name: string };
   service?: { name: string };
 }
