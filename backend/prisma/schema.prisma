@@ -1,13 +1,192 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// ============================================================
+//  Barber System — Prisma Schema
+//  Entidades: User, Client, Service, Appointment,
+//             FinancialTransaction, BarberSchedule
+// ============================================================
 
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
 }
+
+// ─────────────────────────────────────────────
+//  ENUMS
+// ─────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  BARBER
+}
+
+enum AppointmentStatus {
+  PENDING    // aguardando confirmação
+  CONFIRMED  // confirmado pelo barbeiro
+  COMPLETED  // atendimento concluído
+  CANCELLED  // cancelado
+  NO_SHOW    // cliente não compareceu
+}
+
+enum TransactionType {
+  INCOME   // entrada
+  EXPENSE  // saída
+}
+
+enum TransactionCategory {
+  SERVICE  // receita de serviço
+  PRODUCT  // venda de produto
+  SALARY   // pagamento de funcionário
+  RENT     // aluguel
+  SUPPLY   // insumos / materiais
+  OTHER    // outros
+}
+
+enum PaymentMethod {
+  CASH        // dinheiro
+  PIX
+  CREDIT_CARD // cartão de crédito
+  DEBIT_CARD  // cartão de débito
+}
+
+// ─────────────────────────────────────────────
+//  USER
+//  Representa admins e barbeiros do sistema
+// ─────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(BARBER)
+  phone     String?
+  avatarUrl String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  appointments         Appointment[]         @relation("BarberAppointments")
+  barberSchedules      BarberSchedule[]
+  financialTransactions FinancialTransaction[] @relation("UserTransactions")
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+//  CLIENT
+//  Clientes que realizam agendamentos
+// ─────────────────────────────────────────────
+
+model Client {
+  id        String    @id @default(uuid())
+  name      String
+  email     String?   @unique
+  phone     String    @unique
+  birthDate DateTime?
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relações
+  appointments Appointment[]
+
+  @@map("clients")
+}
+
+// ─────────────────────────────────────────────
+//  SERVICE
+//  Catálogo de serviços da barbearia
+// ─────────────────────────────────────────────
+
+model Service {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?
+  price           Decimal  @db.Decimal(10, 2)
+  durationMinutes Int
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relações
+  appointments Appointment[]
+
+  @@map("services")
+}
+
+// ─────────────────────────────────────────────
+//  APPOINTMENT
+//  Agendamento de cliente com barbeiro
+// ─────────────────────────────────────────────
+
+model Appointment {
+  id         String            @id @default(uuid())
+  clientId   String
+  barberId   String
+  serviceId  String
+  date       DateTime
+  status     AppointmentStatus @default(PENDING)
+  notes      String?
+  totalPrice Decimal           @db.Decimal(10, 2)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  // Relações
+  client  Client  @relation(fields: [clientId], references: [id])
+  barber  User    @relation("BarberAppointments", fields: [barberId], references: [id])
+  service Service @relation(fields: [serviceId], references: [id])
+
+  financialTransaction FinancialTransaction?
+
+  @@map("appointments")
+}
+
+// ─────────────────────────────────────────────
+//  FINANCIAL TRANSACTION
+//  Registro de entradas e saídas financeiras
+// ─────────────────────────────────────────────
+
+model FinancialTransaction {
+  id            String              @id @default(uuid())
+  type          TransactionType
+  category      TransactionCategory
+  description   String
+  amount        Decimal             @db.Decimal(10, 2)
+  date          DateTime
+  paymentMethod PaymentMethod?
+  appointmentId String?             @unique
+  userId        String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  // Relações
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+  user        User?        @relation("UserTransactions", fields: [userId], references: [id])
+
+  @@map("financial_transactions")
+}
+
+// ─────────────────────────────────────────────
+//  BARBER SCHEDULE
+//  Define os dias/horários de cada barbeiro
+// ─────────────────────────────────────────────
+
+model BarberSchedule {
+  id         String  @id @default(uuid())
+  barberId   String
+  dayOfWeek  Int     // 0 = Domingo, 1 = Segunda ... 6 = Sábado
+  startTime  String  // ex: "09:00"
+  endTime    String  // ex: "18:00"
+  isWorking  Boolean @default(true)
+
+  // Relações
+  barber User @relation(fields: [barberId], references: [id])
+
+  @@unique([barberId, dayOfWeek])
+  @@map("barber_schedules")
+}
+
