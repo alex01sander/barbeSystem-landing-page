@@ -33,7 +33,7 @@ export function Hero() {
             className="font-display text-5xl md:text-8xl font-bold leading-[1.1] tracking-tight mb-8"
           >
             Precisão que você <br />
-            <span className="text-zinc-600">já conhece.</span> <br />
+            <span className="text-zinc-500">já conhece.</span> <br />
             Espaço que é <span className="text-accent italic">só nosso.</span>
           </motion.h1>
 
