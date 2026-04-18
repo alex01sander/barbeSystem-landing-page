@@ -187,3 +187,17 @@ export async function createTransaction(transactionData: CreateTransactionDTO): 
   const { data } = await api.post("/financial", transactionData);
   return data;
 }
+
+/* PUBLIC SITE METHODS */
+
+export async function getAvailableSlots(barberId: string, serviceId: string, date: string): Promise<string[]> {
+  const { data } = await api.get("/appointments/available", {
+    params: { barberId, serviceId, date }
+  });
+  return data;
+}
+
+export async function createPublicAppointment(bookingData: any) {
+  const { data } = await api.post("/appointments/public", bookingData);
+  return data;
+}

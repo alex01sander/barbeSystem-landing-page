@@ -34,6 +34,37 @@ export class AppointmentController {
     }
   }
 
+  async getAvailableSlots(req: Request, res: Response) {
+    try {
+      const { barberId, serviceId, date } = req.query;
+      
+      if (!barberId || !serviceId || !date) {
+        return res.status(400).json({ error: "Parâmetros barberId, serviceId e date são obrigatórios" });
+      }
+
+      const slots = await appointmentService.getAvailableSlots(
+        barberId as string,
+        serviceId as string,
+        date as string
+      );
+
+      return res.json(slots);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Erro ao buscar horários disponíveis";
+      return res.status(500).json({ error: message });
+    }
+  }
+
+  async createPublic(req: Request, res: Response) {
+    try {
+      const appointment = await appointmentService.createPublicAppointment(req.body);
+      return res.status(201).json(appointment);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Erro ao criar agendamento público";
+      return res.status(400).json({ error: message });
+    }
+  }
+
   async updateStatus(req: Request, res: Response) {
     try {
       const { id } = req.params;

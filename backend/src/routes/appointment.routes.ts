@@ -5,7 +5,11 @@ import { authMiddleware } from "../middlewares/auth.middleware";
 const router = Router();
 const appointmentController = new AppointmentController();
 
-// Todas as rotas de agendamentos requerem autenticação
+// Rotas exclusivas da Landing Page (Públicas)
+router.get("/available", appointmentController.getAvailableSlots);
+router.post("/public", appointmentController.createPublic);
+
+// Rotas Administrativas (Requerem Autenticação)
 router.use(authMiddleware);
 
 router.get("/", appointmentController.index);

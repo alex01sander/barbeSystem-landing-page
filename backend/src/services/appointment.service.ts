@@ -70,6 +70,84 @@ export class AppointmentService {
     });
   }
 
+  async getAvailableSlots(barberId: string, serviceId: string, date: string) {
+    const service = await serviceRepository.findById(serviceId);
+    if (!service) throw new Error("Serviço não encontrado");
+
+    const startTime = 8; // 08:00
+    const endTime = 20; // 20:00
+    const slots: string[] = [];
+
+    // Gerar slots de 30 em 30 minutos
+    for (let hour = startTime; hour < endTime; hour++) {
+      for (let min of [0, 30]) {
+        const timeStr = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`;
+        const slotDate = new Date(`${date}T${timeStr}:00`);
+        
+        // Calcular quando o serviço terminaria se começasse neste slot
+        const slotEndDate = new Date(slotDate.getTime() + service.durationMinutes * 60000);
+
+        // Verificar se este slot colide com algum agendamento existente
+        const conflicts = await appointmentRepository.findOverlapping(barberId, slotDate, slotEndDate);
+        
+        const hasConflict = conflicts.some(appt => {
+          const apptStart = new Date(appt.date);
+          const apptEnd = new Date(apptStart.getTime() + appt.service.durationMinutes * 60000);
+          return slotDate < apptEnd && slotEndDate > apptStart;
+        });
+
+        if (!hasConflict) {
+          slots.push(timeStr);
+        }
+      }
+    }
+
+    return slots;
+  }
+
+  async createPublicAppointment(data: {
+    clientName: string;
+    clientPhone: string;
+    barberId: string;
+    serviceId: string;
+    date: string;
+    time: string;
+  }) {
+    // 1. Validar disponibilidade novamente (concorrência)
+    const appointmentDate = new Date(`${data.date}T${data.time}:00`);
+    const service = await serviceRepository.findById(data.serviceId);
+    if (!service) throw new Error("Serviço não encontrado");
+
+    const appointmentEndDate = new Date(appointmentDate.getTime() + service.durationMinutes * 60000);
+    const conflicts = await appointmentRepository.findOverlapping(data.barberId, appointmentDate, appointmentEndDate);
+    
+    const hasConflict = conflicts.some(appt => {
+      const apptStart = new Date(appt.date);
+      const apptEnd = new Date(apptStart.getTime() + appt.service.durationMinutes * 60000);
+      return appointmentDate < apptEnd && appointmentEndDate > apptStart;
+    });
+
+    if (hasConflict) throw new Error("Horário não disponível");
+
+    // 2. Buscar ou criar cliente
+    let client = await clientRepository.findByPhone(data.clientPhone);
+    if (!client) {
+      client = await clientRepository.create({
+        name: data.clientName,
+        phone: data.clientPhone
+      });
+    }
+
+    // 3. Criar agendamento (via método existente adaptado ou repo direto)
+    return appointmentRepository.create({
+      clientId: client.id,
+      barberId: data.barberId,
+      serviceId: data.serviceId,
+      date: appointmentDate.toISOString(),
+      totalPrice: Number(service.price)
+    });
+  }
+
   async updateStatus(id: string, status: AppointmentStatus) {
     const appointment = await appointmentRepository.findById(id);
     if (!appointment) throw new Error("Agendamento não encontrado");
@@ -78,6 +156,9 @@ export class AppointmentService {
 
     // Se o status for concluído, lança automaticamente no financeiro
     if (status === "COMPLETED") {
+       // Note: appointmentRepository should handle prisma access or use a service
+       // For now, continuing the pattern found in the file
+       const { prisma } = require("../config/prisma"); 
        await prisma.financialTransaction.create({
          data: {
            type: "INCOME",

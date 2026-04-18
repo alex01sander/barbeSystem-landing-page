@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
-
+// O conteúdo desta página foi movido para app/(site)/page.tsx
+// para suportar a nova Landing Page institucional.
 export default function Home() {
-  redirect("/login");
+  return null;
 }

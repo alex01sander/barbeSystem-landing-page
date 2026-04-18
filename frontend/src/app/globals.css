@@ -1,30 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  --background: #09090b; /* Zinc 950 */
-  --foreground: #fafafa; /* Zinc 50 */
-  --primary: #ffffff;    /* Pure White for modern look */
-  --primary-foreground: #09090b;
-  --secondary: #18181b;  /* Zinc 900 */
-  --border: #27272a;    /* Zinc 800 */
-  --muted: #71717a;     /* Zinc 500 */
-  --accent: #d4af37;    /* Subtle Gold for rare highlights */
-  --card: #09090b;
-  --radius: 0.5rem;     /* Slightly tighter radius for modern feel */
+  --background: #0a0a0a;
+  --foreground: #f5f5f5;
+  --primary: #ffffff;
+  --secondary: #111111;
+  --border: #1f1f1f;
+  --muted: #a1a1aa;
+  --accent: #c9a84c;
+  --card: #111111;
+  --radius: 0.25rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-card: var(--card);
   
+  --font-display: var(--font-playfair);
+  --font-body: var(--font-dm-sans);
+  
   --radius-xl: var(--radius);
+}
+
+.font-display { font-family: var(--font-playfair); }
+.font-body { font-family: var(--font-dm-sans); }
+
+.noise-bg {
+  position: relative;
+}
+
+.noise-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
 * {
