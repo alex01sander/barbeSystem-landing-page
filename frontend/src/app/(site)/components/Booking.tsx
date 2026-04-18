@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { getServices, getBarbers, getAvailableSlots, createPublicAppointment } from "@/services/api";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,9 +13,10 @@ import {
   User, 
   Scissors,
   Phone,
-  MessageCircle
+  MessageCircle,
+  CalendarDays
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, addDays, startOfToday, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export function Booking() {
@@ -30,6 +31,9 @@ export function Booking() {
     clientName: "",
     clientPhone: ""
   });
+
+  // Generate next 14 days for the horizontal selector
+  const availableDates = Array.from({ length: 14 }, (_, i) => addDays(startOfToday(), i));
 
   const { data: services } = useQuery({ queryKey: ["public-services"], queryFn: getServices });
   const { data: barbers } = useQuery({ queryKey: ["public-barbers"], queryFn: getBarbers });
@@ -55,46 +59,59 @@ export function Booking() {
     bookingMutation.mutate(selection);
   };
 
-  const selectedService = services?.find(s => s.id === selection.serviceId);
-  const selectedBarber = barbers?.find(b => b.id === selection.barberId);
+  const steps = [
+    { id: 1, name: "Serviço", icon: <Scissors className="w-4 h-4" /> },
+    { id: 2, name: "Barbeiro", icon: <User className="w-4 h-4" /> },
+    { id: 3, name: "Data/Hora", icon: <CalendarDays className="w-4 h-4" /> },
+    { id: 4, name: "Confirmar", icon: <Check className="w-4 h-4" /> },
+  ];
 
   return (
-    <section id="agendamento" className="py-32 px-6 bg-secondary/20">
-      <div className="max-w-4xl mx-auto">
+    <section id="agendamento" className="relative py-40 px-8 bg-zinc-950 border-y border-white/5 overflow-hidden">
+      {/* Subtle Background Image */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1599351431202-1e0f0137899a?q=80&w=1888')] bg-cover bg-fixed bg-center grayscale opacity-[0.05] mix-blend-soft-light" />
+      </div>
+
+      <div className="max-w-5xl mx-auto relative z-10">
         <div className="text-center mb-16">
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-accent">Reserve sua vaga</span>
-          <h2 className="font-display text-4xl md:text-5xl font-bold mt-4">Agendamento Online</h2>
-          <p className="font-body text-zinc-400 mt-4">Rápido, simples e sem complicação.</p>
+          <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-zinc-600">Agendamento Online</span>
+          <h2 className="font-display text-5xl md:text-7xl font-black mt-6 uppercase tracking-tighter">
+            AGENDE SEU <span className="text-stroke">HORÁRIO</span>
+          </h2>
+          <p className="font-body text-zinc-500 mt-6 max-w-2xl mx-auto uppercase text-[10px] tracking-[0.2em] leading-relaxed">
+            Reserve seu horário de forma rápida e prática. Escolha o serviço, barbeiro e horário que melhor se encaixa na sua rotina.
+          </p>
         </div>
 
-        <div className="bg-background border border-border overflow-hidden min-h-[500px] flex flex-col sm:flex-row">
-          {/* Progress Sidebar */}
-          <div className="w-full sm:w-64 bg-secondary p-8 border-b sm:border-b-0 sm:border-r border-border flex flex-row sm:flex-col gap-4">
-             {[1, 2, 3, 4].map(i => (
-               <div key={i} className={`flex items-center gap-3 ${step === i ? 'text-white' : i < step ? 'text-accent' : 'text-zinc-700'}`}>
-                 <div className={`w-8 h-8 rounded-full border flex items-center justify-center text-[10px] font-bold ${step === i ? 'border-white' : i < step ? 'border-accent bg-accent text-black' : 'border-zinc-800'}`}>
-                   {i < step ? <Check className="w-4 h-4" /> : i}
-                 </div>
-                 <span className="text-[10px] uppercase font-bold tracking-widest hidden sm:block">
-                   {i === 1 ? "Serviço" : i === 2 ? "Profissional" : i === 3 ? "Data/Hora" : "Seus Dados"}
-                 </span>
-               </div>
-             ))}
-          </div>
+        {/* New Stepper Design */}
+        <div className="flex flex-wrap items-center justify-center gap-4 md:gap-8 mb-16">
+          {steps.map((s, idx) => (
+            <Fragment key={s.id}>
+              <div className={`flex items-center gap-3 px-6 py-3 border transition-all duration-500 ${step === s.id ? 'bg-white text-black border-white' : 'bg-transparent text-zinc-500 border-white/5'}`}>
+                {s.icon}
+                <span className="text-[10px] font-black uppercase tracking-widest">{s.name}</span>
+              </div>
+              {idx < steps.length - 1 && (
+                <div className="hidden md:block w-8 h-[1px] bg-white/10" />
+              )}
+            </Fragment>
+          ))}
+        </div>
 
-          {/* Form Content */}
-          <div className="flex-1 p-8 md:p-12 relative overflow-hidden">
+        <div className="bg-black border border-white/5 shadow-2xl overflow-hidden min-h-[600px]">
+          <div className="p-8 md:p-16">
             <AnimatePresence mode="wait">
               {step === 1 && (
                 <motion.div
                   key="step1"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-12"
                 >
-                  <h3 className="font-display text-2xl font-bold">Escolha o serviço</h3>
-                  <div className="grid grid-cols-1 gap-3">
+                  <h3 className="font-display text-3xl font-black uppercase tracking-tighter">Escolha o Serviço</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {services?.map(s => (
                       <button
                         key={s.id}
@@ -102,13 +119,13 @@ export function Booking() {
                           setSelection(prev => ({ ...prev, serviceId: s.id, serviceName: s.name }));
                           nextStep();
                         }}
-                        className={`w-full p-4 flex items-center justify-between border text-left transition-all ${selection.serviceId === s.id ? 'border-accent bg-accent/5' : 'border-border hover:border-zinc-700'}`}
+                        className={`w-full p-8 flex items-center justify-between border transition-all duration-500 group ${selection.serviceId === s.id ? 'border-white bg-white text-black' : 'border-white/5 hover:border-white/20 hover:bg-white/5'}`}
                       >
-                        <div>
-                          <div className="font-bold text-sm">{s.name}</div>
-                          <div className="text-[10px] text-zinc-500 uppercase tracking-widest mt-1">{s.durationMinutes} min</div>
+                        <div className="text-left">
+                          <div className="font-black text-base uppercase tracking-tight">{s.name}</div>
+                          <div className={`text-[10px] uppercase font-bold tracking-widest mt-2 ${selection.serviceId === s.id ? 'text-black/60' : 'text-zinc-600'}`}>{s.durationMinutes} MINUTOS</div>
                         </div>
-                        <div className="font-bold text-accent">R$ {Number(s.price).toFixed(0)}</div>
+                        <div className={`font-display text-xl font-black italic ${selection.serviceId === s.id ? 'text-black' : 'text-white'}`}>R$ {Number(s.price).toFixed(0)}</div>
                       </button>
                     ))}
                   </div>
@@ -118,16 +135,13 @@ export function Booking() {
               {step === 2 && (
                 <motion.div
                   key="step2"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-12"
                 >
-                  <button onClick={prevStep} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors">
-                    <ChevronLeft className="w-4 h-4" /> Voltar
-                  </button>
-                  <h3 className="font-display text-2xl font-bold">Escolha o barbeiro</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <h3 className="font-display text-3xl font-black uppercase tracking-tighter">Escolha o Profissional</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {barbers?.map(b => (
                       <button
                         key={b.id}
@@ -135,15 +149,18 @@ export function Booking() {
                           setSelection(prev => ({ ...prev, barberId: b.id, barberName: b.name }));
                           nextStep();
                         }}
-                        className={`p-6 flex flex-col items-center border transition-all ${selection.barberId === b.id ? 'border-accent bg-accent/5' : 'border-border hover:border-zinc-700'}`}
+                        className={`p-10 flex flex-col items-center border transition-all duration-500 ${selection.barberId === b.id ? 'border-white bg-white text-black' : 'border-white/5 hover:border-white/20 hover:bg-white/5'}`}
                       >
-                         <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center font-display text-2xl mb-4 text-zinc-700">
+                         <div className={`w-20 h-20 rounded-full flex items-center justify-center font-display text-3xl mb-6 transition-colors ${selection.barberId === b.id ? 'bg-black text-white' : 'bg-zinc-900 text-zinc-700'}`}>
                            {b.name.charAt(0)}
                          </div>
-                         <div className="font-bold text-sm">{b.name}</div>
-                         <div className="text-[9px] uppercase font-bold text-accent tracking-[0.2em] mt-1 italic">Mestre</div>
+                         <div className="font-black text-sm uppercase tracking-widest">{b.name}</div>
+                         <div className={`text-[9px] uppercase font-bold tracking-[0.2em] mt-2 italic ${selection.barberId === b.id ? 'text-black/60' : 'text-zinc-600'}`}>Mestre</div>
                       </button>
                     ))}
+                  </div>
+                  <div className="pt-8 border-t border-white/5">
+                    <button onClick={prevStep} className="bw-button-outline !px-10">Voltar</button>
                   </div>
                 </motion.div>
               )}
@@ -151,147 +168,192 @@ export function Booking() {
               {step === 3 && (
                 <motion.div
                   key="step3"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-12"
                 >
-                  <button onClick={prevStep} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors">
-                    <ChevronLeft className="w-4 h-4" /> Voltar
-                  </button>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <h3 className="font-display text-2xl font-bold">Data e Horário</h3>
-                    <input 
-                      type="date"
-                      min={format(new Date(), "yyyy-MM-dd")}
-                      value={selection.date}
-                      onChange={(e) => setSelection(prev => ({ ...prev, date: e.target.value }))}
-                      className="bg-secondary border border-border p-2 text-xs font-bold uppercase focus:outline-none focus:border-accent"
-                    />
+                  <h3 className="font-display text-3xl font-black uppercase tracking-tighter">Escolha Data e Horário</h3>
+                  
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Selecione a data</p>
+                    <div className="flex overflow-x-auto gap-3 pb-4 scrollbar-hide">
+                      {availableDates.map((date) => {
+                        const dateStr = format(date, "yyyy-MM-dd");
+                        const isSelected = selection.date === dateStr;
+                        return (
+                          <button
+                            key={dateStr}
+                            onClick={() => setSelection(prev => ({ ...prev, date: dateStr, time: "" }))}
+                            className={`flex-shrink-0 w-24 p-6 border transition-all duration-500 flex flex-col items-center gap-1 ${isSelected ? 'border-white bg-white text-black scale-105' : 'border-white/5 hover:border-white/20 bg-zinc-950/50 text-zinc-500'}`}
+                          >
+                            <span className="text-[8px] font-black uppercase tracking-tighter">{format(date, "EEEE", { locale: ptBR })}</span>
+                            <span className="text-xl font-black">{format(date, "dd")}</span>
+                            <span className="text-[8px] font-black uppercase">{format(date, "MMM", { locale: ptBR })}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {/* Progress Bar under dates */}
+                    <div className="w-full h-[2px] bg-zinc-900 relative">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: "40%" }}
+                        className="absolute top-0 left-0 h-full bg-white/20"
+                      />
+                    </div>
                   </div>
 
-                  {isLoadingSlots ? (
-                    <div className="py-12 text-center text-[10px] uppercase font-bold tracking-[0.3em] text-zinc-600 animate-pulse">Sincronizando agenda...</div>
-                  ) : !slots || slots.length === 0 ? (
-                    <div className="py-12 text-center text-sm text-zinc-500 italic font-body">Nenhum horário disponível para este dia.</div>
-                  ) : (
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                       {slots.map(s => (
-                         <button
-                           key={s}
-                           onClick={() => {
-                             setSelection(prev => ({ ...prev, time: s }));
-                             nextStep();
-                           }}
-                           className={`p-3 border text-center font-bold text-xs tracking-widest transition-all ${selection.time === s ? 'border-accent bg-accent text-black' : 'border-border hover:border-zinc-700 text-zinc-400'}`}
-                         >
-                           {s}
-                         </button>
-                       ))}
-                    </div>
-                  )}
+                  <div className="space-y-6">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Selecione o horário</p>
+                    {isLoadingSlots ? (
+                      <div className="py-20 text-center text-[10px] uppercase font-black tracking-[0.5em] text-zinc-700 animate-pulse italic">Consultando Disponibilidade...</div>
+                    ) : !slots || slots.length === 0 ? (
+                      <div className="py-20 text-center text-xs text-zinc-600 uppercase tracking-widest border border-dashed border-white/5">Nenhum horário para esta data.</div>
+                    ) : (
+                      <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+                         {slots.map(s => (
+                           <button
+                             key={s}
+                             onClick={() => setSelection(prev => ({ ...prev, time: s }))}
+                             className={`p-4 border text-center font-black text-xs tracking-tighter transition-all duration-300 ${selection.time === s ? 'border-white bg-white text-black scale-105' : 'border-white/5 hover:border-white/40 text-zinc-500'}`}
+                           >
+                             {s}
+                           </button>
+                         ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-8 border-t border-white/5 flex justify-between items-center">
+                    <button onClick={prevStep} className="text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white flex items-center gap-2 transition-colors">
+                      <ChevronLeft className="w-4 h-4" /> Voltar
+                    </button>
+                    <button 
+                      onClick={nextStep} 
+                      disabled={!selection.time}
+                      className={`bw-button !px-12 flex items-center gap-3 disabled:opacity-20 disabled:cursor-not-allowed`}
+                    >
+                      Próximo <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </motion.div>
               )}
 
               {step === 4 && (
                 <motion.div
                   key="step4"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="space-y-12"
                 >
-                  <button onClick={prevStep} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted hover:text-white transition-colors">
-                    <ChevronLeft className="w-4 h-4" /> Voltar
-                  </button>
-                  <h3 className="font-display text-2xl font-bold">Finalize seu agendamento</h3>
+                  <h3 className="font-display text-3xl font-black uppercase tracking-tighter">Seus Detalhes</h3>
                   
-                  <div className="p-4 bg-secondary/50 border border-border space-y-2 mb-8">
-                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                       <span className="text-muted">Serviço</span>
-                       <span>{selection.serviceName}</span>
-                     </div>
-                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                       <span className="text-muted">Barbeiro</span>
-                       <span>{selection.barberName}</span>
-                     </div>
-                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                       <span className="text-muted">Data</span>
-                       <span>{format(new Date(`${selection.date}T10:00:00`), "dd 'de' MMMM", { locale: ptBR })}</span>
-                     </div>
-                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
-                       <span className="text-muted">Hora</span>
-                       <span>{selection.time}</span>
-                     </div>
-                  </div>
+                  <form onSubmit={handleBooking} className="space-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600 ml-1">Nome Completo</label>
+                        <div className="relative">
+                          <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-800" />
+                          <input
+                            required
+                            value={selection.clientName}
+                            onChange={(e) => setSelection(prev => ({ ...prev, clientName: e.target.value }))}
+                            className="w-full bg-zinc-950 border border-white/5 py-5 pl-14 pr-6 text-sm focus:outline-none focus:border-white transition-all uppercase tracking-widest font-bold"
+                            placeholder="DIGITE SEU NOME"
+                          />
+                        </div>
+                      </div>
 
-                  <form onSubmit={handleBooking} className="space-y-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold uppercase tracking-widest text-muted">Nome Completo</label>
-                      <input 
-                        required
-                        type="text"
-                        value={selection.clientName}
-                        onChange={e => setSelection(prev => ({ ...prev, clientName: e.target.value }))}
-                        placeholder="Ex: João Silva"
-                        className="w-full bg-secondary border border-border p-4 text-sm focus:outline-none focus:border-accent"
-                      />
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600 ml-1">WhatsApp</label>
+                        <div className="relative">
+                          <MessageCircle className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-800" />
+                          <input
+                            required
+                            type="tel"
+                            value={selection.clientPhone}
+                            onChange={(e) => setSelection(prev => ({ ...prev, clientPhone: e.target.value }))}
+                            className="w-full bg-zinc-950 border border-white/5 py-5 pl-14 pr-6 text-sm focus:outline-none focus:border-white transition-all uppercase tracking-widest font-bold"
+                            placeholder="(00) 00000-0000"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[9px] font-bold uppercase tracking-widest text-muted">WhatsApp (com DDD)</label>
-                      <input 
-                        required
-                        type="tel"
-                        value={selection.clientPhone}
-                        onChange={e => setSelection(prev => ({ ...prev, clientPhone: e.target.value }))}
-                        placeholder="Ex: 48999999999"
-                        className="w-full bg-secondary border border-border p-4 text-sm focus:outline-none focus:border-accent"
-                      />
+
+                    <div className="p-10 bg-zinc-950 border border-white/5 space-y-4">
+                       <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 mb-6">Resumo da Reserva</p>
+                       <div className="flex justify-between items-end border-b border-white/5 pb-4">
+                         <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Serviço</span>
+                         <span className="font-display text-xl font-black uppercase tracking-tighter italic">{selection.serviceName}</span>
+                       </div>
+                       <div className="flex justify-between items-end border-b border-white/5 pb-4">
+                         <span className="text-zinc-500 text-[10px] uppercase font-bold tracking-widest">Data & Hora</span>
+                         <span className="font-display text-xl font-black uppercase tracking-tighter italic">
+                          {format(new Date(selection.date + 'T12:00:00'), "dd 'DE' MMM", { locale: ptBR })} — {selection.time}
+                         </span>
+                       </div>
                     </div>
-                    <button
-                      disabled={bookingMutation.isPending}
-                      className="w-full py-5 bg-accent text-black font-bold uppercase text-[10px] tracking-[0.2em] shadow-xl shadow-accent/10 hover:opacity-90 transition-opacity disabled:opacity-50"
-                    >
-                      {bookingMutation.isPending ? "Confirmando..." : "Confirmar Agendamento"}
-                    </button>
+
+                    <div className="flex justify-between items-center pt-8 border-t border-white/5">
+                      <button type="button" onClick={prevStep} className="text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-white flex items-center gap-2 transition-colors">
+                        <ChevronLeft className="w-4 h-4" /> Voltar
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={bookingMutation.isPending}
+                        className="bw-button !px-16 flex items-center justify-center gap-4 group"
+                      >
+                        {bookingMutation.isPending ? (
+                          <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                        ) : (
+                          <>
+                            Confirmar Reserva
+                            <ChevronRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </form>
                 </motion.div>
               )}
 
               {step === 5 && (
-                 <motion.div
+                <motion.div
                   key="step5"
-                  initial={{ opacity: 0, scale: 0.95 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="h-full flex flex-col items-center justify-center text-center space-y-6"
+                  className="h-full flex flex-col items-center justify-center text-center space-y-8"
                 >
-                  <div className="w-20 h-20 rounded-full border border-accent flex items-center justify-center bg-accent/10 mb-2">
-                    <Check className="w-10 h-10 text-accent" />
+                  <div className="w-24 h-24 rounded-full border-2 border-white flex items-center justify-center mb-4">
+                    <Check className="w-12 h-12 text-white" />
                   </div>
-                  <h3 className="font-display text-3xl font-bold">Agendamento Realizado!</h3>
-                  <p className="font-body text-zinc-400 max-w-xs mx-auto">
-                    Tudo certo, <strong>{selection.clientName}</strong>! Seu horário está reservado.
-                  </p>
-                  
-                  <div className="p-6 bg-secondary border border-border w-full space-y-1">
-                    <div className="text-[10px] text-accent font-bold uppercase tracking-widest">Resumo</div>
-                    <div className="font-display text-lg">{selection.serviceName}</div>
-                    <div className="text-xs text-muted font-bold uppercase tracking-widest">{selection.date} às {selection.time}</div>
+                  <div>
+                    <h3 className="font-display text-4xl font-black uppercase tracking-tighter mb-4">CONFIRMADO</h3>
+                    <p className="font-body text-zinc-500 text-xs uppercase tracking-[0.2em] leading-relaxed max-w-xs mx-auto">
+                      Sua reserva foi processada. <br />
+                      Aguardamos você no <br />
+                      <span className="text-white">{format(new Date(selection.date + 'T00:00:00'), "dd 'DE' MMMM", { locale: ptBR })} ÀS {selection.time}</span>.
+                    </p>
                   </div>
-
-                  <a
-                    href={`https://wa.me/55${selection.clientPhone}?text=Olá! Acabei de agendar um ${selection.serviceName} para o dia ${selection.date} às ${selection.time}.`}
-                    target="_blank"
-                    className="flex items-center justify-center gap-3 w-full py-4 border border-zinc-800 text-xs font-bold uppercase tracking-widest hover:bg-zinc-900 transition-colors"
-                  >
-                    <MessageCircle className="w-4 h-4 text-green-500" /> Adicionar ao WhatsApp
-                  </a>
-
                   <button 
-                    onClick={() => { setStep(1); setSelection(prev => ({ ...prev, time: "", serviceId: "", serviceName: "" })); }}
-                    className="text-[10px] font-bold uppercase text-muted hover:text-white underline underline-offset-4 tracking-[0.2em]"
+                    onClick={() => {
+                      setStep(1);
+                      setSelection({
+                        serviceId: "",
+                        serviceName: "",
+                        barberId: "",
+                        barberName: "",
+                        date: format(new Date(), "yyyy-MM-dd"),
+                        time: "",
+                        clientName: "",
+                        clientPhone: ""
+                      });
+                    }}
+                    className="text-[10px] font-black uppercase tracking-[0.4em] text-white border-b border-white pb-2 hover:text-zinc-400 hover:border-zinc-400 transition-all"
                   >
-                    Fazer outro agendamento
+                    Fazer novo agendamento
                   </button>
                 </motion.div>
               )}

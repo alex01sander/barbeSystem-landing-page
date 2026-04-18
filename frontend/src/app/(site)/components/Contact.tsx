@@ -5,56 +5,66 @@ import { MapPin, Phone, Instagram, Clock } from "lucide-react";
 
 export function Contact() {
   return (
-    <section id="contato" className="py-32 px-6 bg-secondary/10">
+    <section id="contato" className="py-40 px-8 bg-black">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="space-y-12"
+            className="space-y-16"
           >
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-accent">Visite-nos</span>
-              <h2 className="font-display text-4xl md:text-5xl font-bold mt-4">Onde nos encontrar</h2>
+              <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-zinc-500">Contact & Location</span>
+              <h2 className="font-display text-5xl md:text-8xl font-black mt-6 uppercase tracking-tighter">
+                ONDE <br />
+                <span className="text-stroke">ESTAMOS</span>
+              </h2>
             </div>
 
-            <div className="space-y-8">
+            <div className="space-y-12">
               <ContactItem 
-                icon={<MapPin className="w-5 h-5 text-accent" />}
-                title="Endereço"
-                content="Em breve — Aguardando inauguração oficial"
+                icon={<MapPin className="w-5 h-5 text-white" />}
+                title="Localização"
+                content="Em breve — Aguardando inauguração"
               />
               <ContactItem 
-                icon={<Phone className="w-5 h-5 text-accent" />}
-                title="WhatsApp"
-                content="Em breve"
+                icon={<Phone className="w-5 h-5 text-white" />}
+                title="WhatsApp Direct"
+                content="Conecte-se conosco"
+                link="https://wa.me/yourphone"
               />
               <ContactItem 
-                icon={<Clock className="w-5 h-5 text-accent" />}
-                title="Horário"
-                content="Segunda a Sábado, 08h às 20h"
+                icon={<Clock className="w-5 h-5 text-white" />}
+                title="Disponibilidade"
+                content="SEG - SAB | 08:00 - 20:00"
               />
               <ContactItem 
                 link="https://instagram.com/idalgocortes"
-                icon={<Instagram className="w-5 h-5 text-accent" />}
-                title="Instagram"
+                icon={<Instagram className="w-5 h-5 text-white" />}
+                title="Instagram Social"
                 content="@idalgocortes"
               />
             </div>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, scale: 0.98 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="h-full min-h-[400px] bg-secondary border border-border overflow-hidden rounded-sm grayscale"
+            className="relative h-[600px] bg-zinc-950 border border-white/5 overflow-hidden group"
           >
-             {/* Map Placeholder */}
-             <div className="w-full h-full flex flex-col items-center justify-center space-y-4">
-                <MapPin className="w-12 h-12 text-zinc-800" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600">Mapa em breve</span>
+             {/* Map Placeholder with stylization */}
+             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=2066')] bg-cover bg-center grayscale opacity-20 group-hover:opacity-30 transition-opacity duration-1000" />
+             <div className="relative w-full h-full flex flex-col items-center justify-center space-y-6">
+                <div className="w-16 h-16 rounded-full border border-white/20 flex items-center justify-center animate-pulse">
+                  <MapPin className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500">Mapa Interativo Indisponível</span>
              </div>
+             
+             {/* Corner Accents */}
+             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/5 to-transparent" />
           </motion.div>
         </div>
       </div>
@@ -68,14 +78,14 @@ function ContactItem({ icon, title, content, link }: any) {
     <Wrapper 
       href={link} 
       target={link ? "_blank" : undefined}
-      className={`flex items-start gap-6 group ${link ? 'cursor-pointer' : ''}`}
+      className={`flex items-center gap-8 group ${link ? 'cursor-pointer' : ''}`}
     >
-      <div className="w-12 h-12 rounded-full bg-secondary border border-border flex items-center justify-center transition-all group-hover:border-accent group-hover:bg-accent/5">
+      <div className="w-14 h-14 rounded-full border border-white/5 flex items-center justify-center transition-all duration-500 group-hover:border-white group-hover:bg-white group-hover:text-black">
         {icon}
       </div>
       <div>
-        <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted group-hover:text-accent transition-colors">{title}</h4>
-        <p className="font-body text-zinc-300 mt-1">{content}</p>
+        <h4 className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-600 group-hover:text-white transition-colors mb-1">{title}</h4>
+        <p className="font-display text-xl font-black uppercase tracking-tight text-white">{content}</p>
       </div>
     </Wrapper>
   );

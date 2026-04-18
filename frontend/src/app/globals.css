@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #f5f5f5;
+  --background: #000000;
+  --foreground: #ffffff;
   --primary: #ffffff;
-  --secondary: #111111;
-  --border: #1f1f1f;
-  --muted: #a1a1aa;
-  --accent: #c9a84c;
-  --card: #111111;
-  --radius: 0.25rem;
+  --secondary: #0a0a0a;
+  --border: #1a1a1a;
+  --muted: #808080;
+  --accent: #ffffff;
+  --card: #050505;
+  --radius: 0rem;
 }
 
 @theme {
@@ -39,9 +39,9 @@
   content: "";
   position: absolute;
   inset: 0;
-  z-index: 10;
+  z-index: 1;
   pointer-events: none;
-  opacity: 0.03;
+  opacity: 0.02;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
@@ -52,7 +52,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Outfit', sans-serif;
+  font-family: var(--font-dm-sans), sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -60,9 +60,9 @@ body {
 /* Minimalist Utilities */
 
 .glass {
-  background: rgba(9, 9, 11, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--border);
 }
 
@@ -70,34 +70,46 @@ body {
   background: var(--secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .minimal-card:hover {
-  border-color: #3f3f46; /* Zinc 700 */
+  border-color: #ffffff;
 }
 
-/* Gold details - only for small highlights as requested */
-.gold-accent {
-  background: #d4af37;
-  color: #000;
+/* BW Details */
+.bw-button {
+  @apply px-8 py-4 bg-white text-black text-[10px] font-bold uppercase tracking-[0.3em] transition-all hover:bg-zinc-200 active:scale-95;
 }
 
-.text-gold-subtle {
-  color: #dfbd69;
+.bw-button-outline {
+  @apply px-8 py-4 border border-white text-white text-[10px] font-bold uppercase tracking-[0.3em] transition-all hover:bg-white hover:text-black active:scale-95;
+}
+
+.text-stroke {
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.3);
+  color: transparent;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 ::-webkit-scrollbar-track {
   background: var(--background);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 10px;
+  background: #333;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: #555;
 }

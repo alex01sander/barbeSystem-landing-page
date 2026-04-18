@@ -7,34 +7,40 @@ export function Gallery() {
   const images = [1, 2, 3, 4, 5, 6];
 
   return (
-    <section id="galeria" className="py-32 px-6 bg-background">
+    <section id="galeria" className="py-40 px-8 bg-black">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-20 text-center">
-          <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-accent">Estilo Editorial</span>
-          <h2 className="font-display text-4xl md:text-5xl font-bold mt-4">Nosso Trabalho</h2>
+        <div className="mb-32 text-center">
+          <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-zinc-500">Visual Portfolio</span>
+          <h2 className="font-display text-5xl md:text-8xl font-black mt-6 uppercase tracking-tighter">
+            GALERIA <br />
+            <span className="text-stroke">EDITORIAL</span>
+          </h2>
         </div>
 
-        <div className="columns-1 sm:columns-2 lg:columns-3 gap-8 space-y-8">
+        <div className="columns-1 sm:columns-2 lg:columns-3 gap-1 space-y-1">
           {images.map((id) => (
             <motion.div
               key={id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ delay: id * 0.1 }}
-              className="relative group cursor-pointer overflow-hidden bg-secondary border border-border aspect-[4/5]"
+              transition={{ delay: id * 0.1, duration: 0.8 }}
+              className="relative group cursor-pointer overflow-hidden bg-zinc-950 border border-white/5 aspect-[3/4]"
             >
-              <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-800">
-                Foto de Corte
+              <div className="absolute inset-0 bg-zinc-900 flex items-center justify-center">
+                <span className="text-[8px] font-bold uppercase tracking-[0.5em] text-zinc-800">Portfolio Image {id}</span>
               </div>
               
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <Search className="w-8 h-8 text-accent scale-50 group-hover:scale-100 transition-transform duration-300" />
+              <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center backdrop-blur-sm">
+                <div className="flex flex-col items-center gap-4">
+                  <Search className="w-8 h-8 text-white scale-50 group-hover:scale-100 transition-transform duration-500" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white translate-y-4 group-hover:translate-y-0 transition-transform duration-500">Ampliar</span>
+                </div>
               </div>
 
-              {/* Decorative corners */}
-              <div className="absolute top-4 left-4 w-4 h-4 border-t border-l border-accent opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-2 -translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0" />
-              <div className="absolute bottom-4 right-4 w-4 h-4 border-b border-r border-accent opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-2 translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0" />
+              {/* Minimal corner details */}
+              <div className="absolute top-6 left-6 w-8 h-[1px] bg-white/20 scale-x-0 group-hover:scale-x-100 transition-transform duration-700 origin-left" />
+              <div className="absolute top-6 left-6 w-[1px] h-8 bg-white/20 scale-y-0 group-hover:scale-y-100 transition-transform duration-700 origin-top" />
             </motion.div>
           ))}
         </div>

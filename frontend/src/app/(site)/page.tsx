@@ -6,6 +6,7 @@ import { About } from "./components/About";
 import { Services as ServicesComponent } from "./components/Services";
 import { Team } from "./components/Team";
 import { Booking } from "./components/Booking";
+import { MobileBooking } from "./components/MobileBooking";
 import { Gallery } from "./components/Gallery";
 import { Contact } from "./components/Contact";
 import { Footer } from "./components/Footer";
@@ -19,6 +20,7 @@ export default function LandingPage() {
       <ServicesComponent />
       <Team />
       <Booking />
+      <MobileBooking />
       <Gallery />
       <Contact />
       <Footer />
