@@ -76,17 +76,18 @@ export class SaleService {
       }
 
       // 6. Lança no financeiro automaticamente (FinancialTransaction)
-      // Traduzir paymentMethod de string/PDV para o ENUM PaymentMethod se necessário,
-      // ou apenas registrar como INCOME.
+      const itemsDescription = data.items
+        .map(item => `${item.name}${item.quantity > 1 ? ` x${item.quantity}` : ""}`)
+        .join(", ");
+
       await tx.financialTransaction.create({
         data: {
           type: "INCOME",
           amount: total,
-          description: `Venda PDV — ${data.paymentMethod}`,
+          description: `Venda: ${itemsDescription}`,
           category: "PDV",
           date: new Date(),
           saleId: sale.id,
-          // Mapeamento simples de método de pagamento (opcional, dependendo do input do PDV)
         },
       });
 

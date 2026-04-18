@@ -15,11 +15,11 @@ import {
   Trash2, 
   Plus, 
   Minus, 
-  CreditCard,
   CheckCircle,
   Database,
   ArrowRight,
-  User
+  User,
+  Search
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Product, Service, Barber } from "@/types";
@@ -41,6 +41,7 @@ export default function PDVPage() {
   const [paymentMethod, setPaymentMethod] = useState("CASH");
   const [notes, setNotes] = useState("");
   const [success, setSuccess] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { data: services } = useQuery({ queryKey: ["services"], queryFn: getServices });
   const { data: products } = useQuery({ queryKey: ["products"], queryFn: getProducts });
@@ -104,6 +105,10 @@ export default function PDVPage() {
 
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
+  const filteredItems = (activeTab === 'services' ? services : products)?.filter(i => 
+    i.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const handleFinishSale = () => {
     if (cart.length === 0) return alert("Carrinho vazio");
     if (!barberId) return alert("Selecione o barbeiro");
@@ -124,153 +129,150 @@ export default function PDVPage() {
   };
 
   return (
-    <div className="p-8 h-[calc(100vh-100px)] flex flex-col gap-6">
+    <div className="h-[calc(100vh-120px)] flex flex-col gap-8 max-w-[1600px] mx-auto">
       <header className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gold">Ponto de Venda</h1>
-          <p className="text-muted mt-1">Realize vendas de serviços e produtos rapidamente</p>
+          <h1 className="text-3xl font-semibold tracking-tight">Ponto de Venda</h1>
+          <p className="text-muted text-sm mt-1">Registre atendimentos e vendas de produtos rapidamente.</p>
         </div>
         
         {success && (
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2 bg-green-500/20 text-green-500 border border-green-500/30 px-4 py-2 rounded-xl"
+            className="flex items-center gap-2 bg-white text-black px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest shadow-xl"
           >
-            <CheckCircle className="w-5 h-5" /> Venda finalizada com sucesso!
+            <CheckCircle className="w-4 h-4" /> Venda Processada
           </motion.div>
         )}
       </header>
 
       <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Lado Esquerdo - Catálogo */}
+        {/* Catálogo de Itens */}
         <div className="lg:col-span-8 flex flex-col gap-6 min-h-0">
-          <div className="flex p-1 bg-secondary/50 rounded-xl w-fit">
-            <button 
-              onClick={() => setActiveTab('services')}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'services' ? 'gold-gradient text-black shadow-lg shadow-primary/20' : 'text-muted hover:text-white'}`}
-            >
-              <Scissors className="w-4 h-4" /> Serviços
-            </button>
-            <button 
-              onClick={() => setActiveTab('products')}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'products' ? 'gold-gradient text-black shadow-lg shadow-primary/20' : 'text-muted hover:text-white'}`}
-            >
-              <Package className="w-4 h-4" /> Produtos
-            </button>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex p-1 bg-secondary border border-border rounded-xl w-fit">
+              <button 
+                onClick={() => setActiveTab('services')}
+                className={`flex items-center gap-2 px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'services' ? 'bg-white text-black shadow-md' : 'text-muted hover:text-white'}`}
+              >
+                Serviços
+              </button>
+              <button 
+                onClick={() => setActiveTab('products')}
+                className={`flex items-center gap-2 px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'products' ? 'bg-white text-black shadow-md' : 'text-muted hover:text-white'}`}
+              >
+                Produtos
+              </button>
+            </div>
+
+            <div className="relative flex-1 max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
+              <input 
+                type="text"
+                placeholder="Buscar item..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-secondary/50 border border-border rounded-xl pl-10 pr-4 py-2 text-xs focus:outline-none focus:border-white transition-all"
+              />
+            </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar grid grid-cols-1 xl:grid-cols-2 gap-4">
-            {activeTab === 'services' ? (
-              services?.map((s) => (
+          <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-3">
+            {filteredItems?.map((item) => {
+              const itemProduct = item as Product;
+              const isOutOfStock = activeTab === 'products' && itemProduct.stock === 0;
+              
+              return (
                 <div 
-                  key={s.id}
-                  onClick={() => addToCart(s, 'SERVICE')}
-                  className="glass p-5 rounded-2xl border border-white/5 hover:border-primary/40 cursor-pointer transition-all flex items-center justify-between group"
+                  key={item.id}
+                  onClick={() => !isOutOfStock && addToCart(item as any, activeTab === 'services' ? 'SERVICE' : 'PRODUCT')}
+                  className={`p-5 bg-secondary/20 border border-border rounded-2xl transition-all flex flex-col justify-between group h-40 ${isOutOfStock ? 'opacity-30 cursor-not-allowed' : 'hover:border-zinc-500 cursor-pointer'}`}
                 >
-                  <div className="space-y-1">
-                    <h4 className="font-bold">{s.name}</h4>
-                    <p className="text-xs text-muted">{s.durationMinutes} min</p>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-muted uppercase tracking-widest">
+                        {activeTab === 'services' ? (item as Service).durationMinutes + ' min' : itemProduct.unit}
+                      </span>
+                      {activeTab === 'products' && (
+                        <span className={`text-[10px] font-bold ${itemProduct.stock <=3 ? 'text-red-400' : 'text-muted'}`}>
+                          {itemProduct.stock} no estoque
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="font-bold text-sm mt-3 group-hover:text-primary transition-colors">{item.name}</h4>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <span className="font-bold text-primary">R$ {Number(s.price).toFixed(2)}</span>
-                    <div className="p-2 bg-primary/10 rounded-lg text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center justify-between mt-4">
+                    <span className="font-bold text-lg">R$ {Number(item.price).toFixed(2)}</span>
+                    <div className="w-8 h-8 rounded-lg bg-white text-black flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <Plus className="w-4 h-4" />
                     </div>
                   </div>
                 </div>
-              ))
-            ) : (
-              products?.map((p) => (
-                <div 
-                  key={p.id}
-                  onClick={() => p.stock > 0 && addToCart(p, 'PRODUCT')}
-                  className={`glass p-5 rounded-2xl border border-white/5 transition-all flex items-center justify-between group ${p.stock > 0 ? 'hover:border-primary/40 cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
-                >
-                  <div className="space-y-1">
-                    <h4 className="font-bold">{p.name}</h4>
-                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${p.stock <= 3 ? 'text-orange-500 border-orange-500/20 bg-orange-500/10' : 'text-muted border-white/10'}`}>
-                      <Database className="w-2.5 h-2.5 inline mr-1" />
-                      {p.stock} {p.unit}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className="font-bold text-primary">R$ {Number(p.price).toFixed(2)}</span>
-                    <div className="p-2 bg-primary/10 rounded-lg text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Plus className="w-4 h-4" />
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
+              );
+            })}
           </div>
         </div>
 
-        {/* Lado Direito - Carrinho */}
-        <div className="lg:col-span-4 flex flex-col glass rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-          <div className="p-6 border-b border-white/5 bg-secondary/30 flex items-center justify-between">
-            <h3 className="font-bold flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5 text-primary" /> Carrinho
+        {/* Carrinho de Compras */}
+        <div className="lg:col-span-4 flex flex-col bg-secondary/30 border border-border rounded-3xl overflow-hidden shadow-2xl">
+          <div className="p-6 border-b border-border bg-secondary/20 flex items-center justify-between">
+            <h3 className="font-bold text-xs uppercase tracking-widest text-muted flex items-center gap-2">
+              <ShoppingCart className="w-4 h-4" /> Resumo da Venda
             </h3>
-            <span className="text-xs text-muted font-bold">{cart.length} itens</span>
+            <span className="bg-white text-black text-[10px] font-bold px-2 py-0.5 rounded-full">{cart.length}</span>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
             {cart.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center p-8 opacity-20">
-                <ShoppingCart className="w-12 h-12 mb-4" />
-                <p className="text-sm">Seu carrinho está vazio.<br/>Adicione itens do catálogo.</p>
+              <div className="h-full flex flex-col items-center justify-center text-center opacity-20">
+                <ShoppingCart className="w-10 h-10 mb-3" />
+                <p className="text-[11px] font-bold uppercase tracking-widest">Carrinho Vazio</p>
               </div>
             ) : (
               cart.map((item) => (
-                <div key={`${item.type}-${item.id}`} className="p-3 bg-secondary/20 rounded-xl border border-white/5 flex flex-col gap-2">
-                  <div className="flex items-start justify-between">
-                    <div className="max-w-[150px]">
-                      <span className="text-[10px] uppercase tracking-widest text-muted block">
-                        {item.type === 'SERVICE' ? 'Serviço' : 'Produto'}
-                      </span>
-                      <h4 className="text-sm font-bold truncate">{item.name}</h4>
+                <div key={`${item.type}-${item.id}`} className="flex items-start justify-between group">
+                  <div className="flex-1">
+                    <h4 className="text-sm font-bold truncate pr-4">{item.name}</h4>
+                    <div className="flex items-center gap-3 mt-1.5">
+                       <div className="flex items-center gap-2 border border-border rounded-md px-1 py-0.5">
+                         <button onClick={() => updateQuantity(item.id, item.type, -1)} className="text-muted hover:text-white transition-colors"><Minus className="w-3 h-3" /></button>
+                         <span className="text-[10px] font-bold w-4 text-center">{item.quantity}</span>
+                         <button onClick={() => updateQuantity(item.id, item.type, 1)} className="text-muted hover:text-white transition-colors"><Plus className="w-3 h-3" /></button>
+                       </div>
+                       <span className="text-xs font-bold text-primary">R$ {(item.price * item.quantity).toFixed(2)}</span>
                     </div>
-                    <button onClick={() => removeFromCart(item.id, item.type)} className="text-muted hover:text-red-500">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 bg-black/20 rounded-lg p-1">
-                      <button onClick={() => updateQuantity(item.id, item.type, -1)} className="p-1 hover:text-primary transition-colors">
-                        <Minus className="w-3.5 h-3.5" />
-                      </button>
-                      <span className="text-xs font-bold w-6 text-center">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.id, item.type, 1)} className="p-1 hover:text-primary transition-colors">
-                        <Plus className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                    <span className="text-sm font-bold text-primary">R$ {(item.price * item.quantity).toFixed(2)}</span>
-                  </div>
+                  <button 
+                    onClick={() => removeFromCart(item.id, item.type)}
+                    className="p-1.5 text-muted hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               ))
             )}
           </div>
 
-          <div className="p-6 bg-secondary/40 space-y-4 border-t border-white/5">
-            <div className="space-y-3">
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase tracking-widest font-bold text-muted">Barbeiro Responsável</label>
+          <div className="p-8 bg-secondary/60 border-t border-border space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-muted">Responsável</label>
                 <select 
                   value={barberId}
                   onChange={(e) => setBarberId(e.target.value)}
-                  className="w-full bg-black/30 border border-white/10 rounded-lg p-2 text-xs focus:outline-none focus:border-primary/50"
+                  className="w-full bg-background border border-border rounded-xl p-3 text-xs focus:outline-none focus:border-white transition-all appearance-none cursor-pointer"
                 >
-                  <option value="">Selecione...</option>
+                  <option value="">Selecione o barbeiro...</option>
                   {barbers?.map(b => (
                     <option key={b.id} value={b.id}>{b.name}</option>
                   ))}
                 </select>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase tracking-widest font-bold text-muted">Forma de Pagamento</label>
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-muted">Pagamento</label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { id: 'CASH', label: 'Dinheiro' },
@@ -281,7 +283,7 @@ export default function PDVPage() {
                     <button
                       key={method.id}
                       onClick={() => setPaymentMethod(method.id)}
-                      className={`py-2 px-3 rounded-lg text-[10px] font-bold border transition-all ${paymentMethod === method.id ? 'border-primary bg-primary/10 text-primary' : 'border-white/5 bg-black/20 text-muted hover:text-white'}`}
+                      className={`py-2.5 px-3 rounded-lg text-[10px] font-bold border transition-all ${paymentMethod === method.id ? 'border-primary bg-white text-black' : 'border-border bg-background/50 text-muted hover:text-white'}`}
                     >
                       {method.label}
                     </button>
@@ -290,22 +292,16 @@ export default function PDVPage() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-white/5 space-y-4">
+            <div className="pt-6 border-t border-border space-y-5">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted">Subtotal</span>
-                <span className="text-sm font-bold text-white">R$ {total.toFixed(2)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-lg font-bold text-white uppercase tracking-tighter">Total</span>
-                <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-amber-200">
-                  R$ {total.toFixed(2)}
-                </span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted">Total a Receber</span>
+                <span className="text-2xl font-bold tracking-tighter">R$ {total.toFixed(2)}</span>
               </div>
 
               <button 
                 onClick={handleFinishSale}
                 disabled={saleMutation.isPending || cart.length === 0}
-                className="w-full gold-gradient text-black font-bold py-4 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 transition-all uppercase tracking-widest text-xs"
+                className="w-full bg-white text-black font-bold h-14 rounded-2xl shadow-xl shadow-white/5 flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-20 transition-all uppercase tracking-widest text-xs"
               >
                 {saleMutation.isPending ? "Processando..." : (
                   <>Finalizar Venda <ArrowRight className="w-4 h-4" /></>

@@ -7,12 +7,14 @@ const appointmentService = new AppointmentService();
 export class AppointmentController {
   async index(req: Request, res: Response) {
     try {
-      const { barberId, clientId, date } = req.query;
+      const { barberId, clientId, date, startDate, endDate } = req.query;
       
       const appointments = await appointmentService.list({
         barberId: barberId as string,
         clientId: clientId as string,
-        date: date as string
+        date: date as string,
+        startDate: startDate as string,
+        endDate: endDate as string
       });
 
       return res.json(appointments);

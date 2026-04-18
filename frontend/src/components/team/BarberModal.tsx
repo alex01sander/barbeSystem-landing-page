@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
-import { X, User as UserIcon, Camera, Calendar, Scissors, Upload } from "lucide-react";
+import { X, User, Camera, Trash2, Calendar } from "lucide-react";
 import { createBarber, updateBarber } from "@/services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { Barber } from "@/types";
@@ -18,15 +18,17 @@ export function BarberModal({ isOpen, onClose, barberToEdit }: BarberModalProps)
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [name, setName] = useState("");
-  const [photoUrl, setPhotoUrl] = useState(""); // Aqui guardaremos o Base64
   const [age, setAge] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [isActive, setIsActive] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (barberToEdit) {
       setName(barberToEdit.name);
-      setPhotoUrl(barberToEdit.photoUrl || "");
       setAge(barberToEdit.age?.toString() || "");
+      setPhotoUrl(barberToEdit.photoUrl || null);
+      setIsActive(barberToEdit.isActive);
     } else {
       resetForm();
     }
@@ -43,32 +45,33 @@ export function BarberModal({ isOpen, onClose, barberToEdit }: BarberModalProps)
       resetForm();
     },
     onError: (err: any) => {
-      setError(err.response?.data?.error || "Erro ao salvar barbeiro");
+      setError(err.response?.data?.error || "Erro ao salvar profissional");
     }
   });
 
   function resetForm() {
     setName("");
-    setPhotoUrl("");
     setAge("");
+    setPhotoUrl(null);
+    setIsActive(true);
     setError("");
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setError("A imagem deve ter no máximo 5MB");
-        return;
-      }
-
       const reader = new FileReader();
       reader.onloadend = () => {
         setPhotoUrl(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
-  }
+  };
+
+  const removePhoto = () => {
+    setPhotoUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -81,8 +84,9 @@ export function BarberModal({ isOpen, onClose, barberToEdit }: BarberModalProps)
 
     mutation.mutate({
       name,
-      photoUrl, // Envia o Base64 ou string vazia
-      age: age ? parseInt(age) : undefined
+      age: age ? parseInt(age) : undefined,
+      photoUrl,
+      isActive
     });
   }
 
@@ -90,47 +94,71 @@ export function BarberModal({ isOpen, onClose, barberToEdit }: BarberModalProps)
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 bg-background/80 backdrop-blur-sm"
         />
         
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="glass w-full max-w-md rounded-2xl overflow-hidden relative z-10 border border-white/10"
+          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+          className="bg-secondary border border-border w-full max-w-lg rounded-[24px] overflow-hidden relative z-10 shadow-2xl"
         >
-          <div className="p-6 border-b border-white/10 flex items-center justify-between gold-gradient">
-            <h2 className="text-xl font-bold text-black flex items-center gap-2">
-              <Scissors className="w-5 h-5" />
-              {barberToEdit ? "Editar Barbeiro" : "Novo Barbeiro"}
-            </h2>
-            <button onClick={onClose} className="text-black/70 hover:text-black transition-colors">
-              <X className="w-6 h-6" />
+          <div className="px-8 pt-8 pb-4 flex items-center justify-between">
+            <div>
+               <h2 className="text-xl font-bold tracking-tight text-white">
+                 {barberToEdit ? "Editar Profissional" : "Novo Profissional"}
+               </h2>
+               <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] mt-1">Gestão de Equipe</p>
+            </div>
+            <button onClick={onClose} className="p-2 text-muted hover:text-white transition-colors bg-background border border-border rounded-lg">
+              <X className="w-5 h-5" />
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            {/* Seletor de Foto (Base64) */}
-            <div className="flex flex-col items-center gap-3">
-              <div 
-                onClick={() => fileInputRef.current?.click()}
-                className="w-28 h-28 rounded-full border-2 border-primary/30 overflow-hidden bg-secondary flex items-center justify-center cursor-pointer hover:border-primary transition-all relative group"
-              >
+          <form onSubmit={handleSubmit} className="p-8 pt-4 space-y-8">
+            <div className="flex flex-col items-center gap-6 p-6 bg-background/30 border border-border rounded-3xl">
+              <div className="relative group">
                 {photoUrl ? (
-                  <img src={photoUrl} alt="Preview" className="w-full h-full object-cover" />
+                  <img 
+                    src={photoUrl} 
+                    alt="Preview" 
+                    className="w-32 h-32 rounded-3xl object-cover border-2 border-border p-1"
+                  />
                 ) : (
-                  <UserIcon className="w-10 h-10 text-muted" />
+                  <div className="w-32 h-32 rounded-3xl bg-secondary border-2 border-dashed border-border flex flex-col items-center justify-center text-muted gap-2">
+                    <Camera className="w-8 h-8 opacity-20" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest opacity-40">Sem Foto</span>
+                  </div>
                 )}
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                   <Camera className="w-6 h-6 text-white" />
+                
+                <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 rounded-3xl backdrop-blur-[2px]">
+                   <button 
+                      type="button" 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="p-3 bg-white text-black rounded-xl hover:scale-105 transition-transform"
+                   >
+                     <Camera className="w-4 h-4" />
+                   </button>
+                   {photoUrl && (
+                     <button 
+                        type="button" 
+                        onClick={removePhoto}
+                        className="p-3 bg-red-500 text-white rounded-xl hover:scale-105 transition-transform"
+                     >
+                       <Trash2 className="w-4 h-4" />
+                     </button>
+                   )}
                 </div>
               </div>
+              <p className="text-[10px] text-muted font-bold uppercase tracking-widest text-center">
+                JPG ou PNG • Máximo 2MB
+              </p>
               <input 
                 type="file" 
                 ref={fileInputRef}
@@ -138,58 +166,67 @@ export function BarberModal({ isOpen, onClose, barberToEdit }: BarberModalProps)
                 accept="image/*"
                 className="hidden"
               />
-              <button 
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="text-[10px] uppercase tracking-widest font-bold text-primary flex items-center gap-1 hover:underline"
-              >
-                <Upload className="w-3 h-3" /> Alterar Foto
-              </button>
             </div>
 
-            {/* Nome */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted flex items-center gap-2">
-                <UserIcon className="w-4 h-4" /> Nome do Barbeiro
-              </label>
-              <input 
-                type="text" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: Pedro Silva"
-                className="w-full bg-secondary/50 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary/50"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {/* Idade */}
-              <div className="space-y-2 col-span-2">
-                <label className="text-sm font-medium text-muted flex items-center gap-2">
-                  <Calendar className="w-4 h-4" /> Idade (Opcional)
-                </label>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase font-bold text-muted tracking-widest">Nome Completo</label>
                 <input 
-                  type="number" 
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  placeholder="Ex: 28"
-                  className="w-full bg-secondary/50 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary/50"
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ex: Carlos Silva"
+                  className="w-full bg-background border border-border rounded-xl p-3 text-sm focus:outline-none focus:border-white transition-all"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                 <div className="space-y-2">
+                    <label className="text-[10px] uppercase font-bold text-muted tracking-widest">Idade (Opcional)</label>
+                    <input 
+                      type="number" 
+                      value={age}
+                      onChange={(e) => setAge(e.target.value)}
+                      placeholder="Ex: 28"
+                      className="w-full bg-background border border-border rounded-xl p-3 text-sm focus:outline-none focus:border-white transition-all"
+                    />
+                 </div>
+                 <div className="space-y-2">
+                   <label className="text-[10px] uppercase font-bold text-muted tracking-widest">Status Atual</label>
+                   <select 
+                      value={isActive ? "true" : "false"}
+                      onChange={(e) => setIsActive(e.target.value === "true")}
+                      className="w-full bg-background border border-border rounded-xl p-3 text-sm focus:outline-none focus:border-white transition-all cursor-pointer appearance-none"
+                   >
+                      <option value="true">Ativo</option>
+                      <option value="false">Inativo</option>
+                   </select>
+                 </div>
               </div>
             </div>
 
             {error && (
-              <div className="text-red-500 text-sm bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+              <div className="text-red-400 text-[11px] font-bold bg-red-400/5 p-3 rounded-lg border border-red-400/10 uppercase tracking-wider">
                 {error}
               </div>
             )}
 
-            <button 
-              type="submit"
-              disabled={mutation.isPending}
-              className="w-full gold-gradient text-black font-bold py-4 rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/10 flex items-center justify-center gap-2"
-            >
-              {mutation.isPending ? "Processando..." : barberToEdit ? "Atualizar Perfil" : "Salvar Barbeiro"}
-            </button>
+            <div className="pt-4 flex gap-4">
+               <button 
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 bg-background border border-border text-muted font-bold text-xs py-4 rounded-xl hover:text-white transition-all uppercase tracking-widest"
+               >
+                  Cancelar
+               </button>
+               <button 
+                  type="submit"
+                  disabled={mutation.isPending}
+                  className="flex-[2] bg-white text-black font-bold text-xs py-4 rounded-xl hover:opacity-90 disabled:opacity-50 transition-all uppercase tracking-widest shadow-xl shadow-white/5"
+               >
+                  {mutation.isPending ? "Salvando..." : barberToEdit ? "Salvar Profissional" : "Contratar Barbeiro"}
+               </button>
+            </div>
           </form>
         </motion.div>
       </div>

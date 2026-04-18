@@ -80,109 +80,122 @@ export function ProductModal({ isOpen, onClose, productToEdit }: ProductModalPro
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          className="absolute inset-0 bg-background/80 backdrop-blur-sm"
         />
         
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="glass w-full max-w-md rounded-2xl overflow-hidden relative z-10 border border-white/10"
+          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+          className="bg-secondary border border-border w-full max-w-lg rounded-[24px] overflow-hidden relative z-10 shadow-2xl"
         >
-          <div className="p-6 border-b border-white/10 flex items-center justify-between gold-gradient">
-            <h2 className="text-xl font-bold text-black flex items-center gap-2">
-              <Package className="w-5 h-5" />
-              {productToEdit ? "Editar Produto" : "Novo Produto"}
-            </h2>
-            <button onClick={onClose} className="text-black/70 hover:text-black transition-colors">
-              <X className="w-6 h-6" />
+          <div className="px-8 pt-8 pb-4 flex items-center justify-between">
+            <div>
+               <h2 className="text-xl font-bold tracking-tight">
+                 {productToEdit ? "Editar Produto" : "Novo Produto"}
+               </h2>
+               <p className="text-xs text-muted mt-1 uppercase tracking-widest font-bold">Catálogo de Inventário</p>
+            </div>
+            <button onClick={onClose} className="p-2 text-muted hover:text-white transition-colors bg-background border border-border rounded-lg">
+              <X className="w-5 h-5" />
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted flex items-center gap-2">
-                <Tag className="w-4 h-4" /> Nome do Produto
-              </label>
-              <input 
-                type="text" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: Pomada Efeito Matte"
-                className="w-full bg-secondary/50 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary/50"
-              />
-            </div>
+          <form onSubmit={handleSubmit} className="p-8 pt-4 space-y-6">
+            <div className="space-y-4">
+               <div className="space-y-2">
+                 <label className="text-[10px] font-bold text-muted uppercase tracking-widest">Nome do Produto</label>
+                 <input 
+                   type="text" 
+                   value={name}
+                   onChange={(e) => setName(e.target.value)}
+                   placeholder="Ex: Pomada Brilhante"
+                   className="w-full bg-background border border-border rounded-xl p-3 text-sm focus:outline-none focus:border-white transition-all"
+                 />
+               </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted">Descrição (Opcional)</label>
-              <textarea 
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Detalhes sobre o produto..."
-                className="w-full bg-secondary/50 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary/50 h-24 resize-none"
-              />
-            </div>
+               <div className="space-y-2">
+                 <label className="text-[10px] font-bold text-muted uppercase tracking-widest">Descrição detalhada</label>
+                 <textarea 
+                   value={description}
+                   onChange={(e) => setDescription(e.target.value)}
+                   placeholder="Informações adicionais..."
+                   className="w-full bg-background border border-border rounded-xl p-3 text-sm focus:outline-none focus:border-white transition-all h-28 resize-none"
+                 />
+               </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-muted flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" /> Preço
-                </label>
-                <input 
-                  type="number" 
-                  step="0.01"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  placeholder="0,00"
-                  className="w-full bg-secondary/50 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary/50"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-muted flex items-center gap-2">
-                  <Database className="w-4 h-4" /> Estoque
-                </label>
-                <input 
-                  type="number" 
-                  value={stock}
-                  onChange={(e) => setStock(e.target.value)}
-                  placeholder="0"
-                  className="w-full bg-secondary/50 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary/50"
-                />
-              </div>
-            </div>
+               <div className="grid grid-cols-2 gap-4">
+                 <div className="space-y-2">
+                   <label className="text-[10px] font-bold text-muted uppercase tracking-widest">Preço de Venda</label>
+                   <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                      <input 
+                        type="number" 
+                        step="0.01"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        placeholder="0,00"
+                        className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-white transition-all"
+                      />
+                   </div>
+                 </div>
+                 <div className="space-y-2">
+                   <label className="text-[10px] font-bold text-muted uppercase tracking-widest">Estoque Atual</label>
+                   <div className="relative">
+                      <Database className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                      <input 
+                        type="number" 
+                        value={stock}
+                        onChange={(e) => setStock(e.target.value)}
+                        placeholder="0"
+                        className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-white transition-all"
+                      />
+                   </div>
+                 </div>
+               </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted">Unidade de Medida</label>
-              <select 
-                value={unit} 
-                onChange={(e) => setUnit(e.target.value)}
-                className="w-full bg-secondary/50 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary/50"
-              >
-                <option value="un">Unidade (un)</option>
-                <option value="ml">Mililitros (ml)</option>
-                <option value="gr">Gramas (gr)</option>
-              </select>
+               <div className="space-y-2">
+                 <label className="text-[10px] font-bold text-muted uppercase tracking-widest">Unidade</label>
+                 <select 
+                   value={unit} 
+                   onChange={(e) => setUnit(e.target.value)}
+                   className="w-full bg-background border border-border rounded-xl p-3 text-sm focus:outline-none focus:border-white transition-all appearance-none cursor-pointer"
+                 >
+                   <option value="un">Unidade (un)</option>
+                   <option value="ml">Mililitros (ml)</option>
+                   <option value="gr">Gramas (gr)</option>
+                 </select>
+               </div>
             </div>
 
             {error && (
-              <div className="text-red-500 text-sm bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+              <div className="text-red-400 text-[11px] font-bold bg-red-400/5 p-3 rounded-lg border border-red-400/10 uppercase tracking-wider">
                 {error}
               </div>
             )}
 
-            <button 
-              type="submit"
-              disabled={mutation.isPending}
-              className="w-full gold-gradient text-black font-bold py-4 rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/10 flex items-center justify-center gap-2"
-            >
-              {mutation.isPending ? "Salvando..." : productToEdit ? "Atualizar Produto" : "Cadastrar Produto"}
-            </button>
+            <div className="pt-4 flex gap-3">
+               <button 
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 bg-background border border-border text-muted font-bold text-xs py-4 rounded-xl hover:text-white transition-all uppercase tracking-widest"
+               >
+                  Cancelar
+               </button>
+               <button 
+                  type="submit"
+                  disabled={mutation.isPending}
+                  className="flex-[2] bg-white text-black font-bold text-xs py-4 rounded-xl hover:opacity-90 disabled:opacity-50 transition-all uppercase tracking-widest shadow-xl shadow-white/5"
+               >
+                  {mutation.isPending ? "Salvando..." : productToEdit ? "Salvar Alterações" : "Cadastrar Item"}
+               </button>
+            </div>
           </form>
         </motion.div>
       </div>

@@ -4,15 +4,13 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getServices, deleteService } from "@/services/api";
 import { 
-  Scissors, 
   Plus, 
-  Clock, 
-  DollarSign, 
   Edit2, 
   Trash2, 
-  Eye, 
-  EyeOff,
-  AlertCircle
+  Scissors, 
+  Clock, 
+  DollarSign,
+  Tag
 } from "lucide-react";
 import { ServiceModal } from "@/components/services/ServiceModal";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,7 +20,6 @@ export default function ServicesPage() {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [serviceToEdit, setServiceToEdit] = useState<Service | null>(null);
-  const [showInactives, setShowInactives] = useState(true);
 
   const { data: services, isLoading } = useQuery({
     queryKey: ["services"],
@@ -36,8 +33,6 @@ export default function ServicesPage() {
     }
   });
 
-  const filteredServices = services?.filter(s => showInactives || s.isActive);
-
   function handleEdit(service: Service) {
     setServiceToEdit(service);
     setIsModalOpen(true);
@@ -49,100 +44,85 @@ export default function ServicesPage() {
   }
 
   function handleDelete(id: string) {
-    if (confirm("Inativar este serviço impedirá novos agendamentos, mas manterá o histórico. Deseja continuar?")) {
+    if (confirm("Deseja realmente remover este serviço do catálogo?")) {
       deleteMutation.mutate(id);
     }
   }
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="space-y-10 max-w-5xl">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-gold">Serviços</h1>
-          <p className="text-muted mt-1">Configure o catálogo, preços e durações dos seus atendimentos</p>
+          <h1 className="text-3xl font-semibold tracking-tight">Serviços</h1>
+          <p className="text-muted text-sm mt-1">Defina os procedimentos, preços e durações oferecidos.</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setShowInactives(!showInactives)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all text-sm font-medium ${showInactives ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-secondary border-white/10 text-muted'}`}
-          >
-            {showInactives ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-            {showInactives ? "Exibindo Inativos" : "Ocultando Inativos"}
-          </button>
-          
-          <button 
-            onClick={handleNew}
-            className="gold-gradient text-black font-bold px-5 py-2 rounded-xl flex items-center gap-2 hover:opacity-90 transition-opacity"
-          >
-            <Plus className="w-5 h-5" />
-            Novo Serviço
-          </button>
-        </div>
+        <button 
+          onClick={handleNew}
+          className="flex items-center justify-center gap-2 bg-white text-black font-bold h-12 px-6 rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-white/5"
+        >
+          <Plus className="w-5 h-5" />
+          Novo Serviço
+        </button>
       </header>
 
       {/* Grid de Serviços */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <AnimatePresence>
           {isLoading ? (
-            <div className="col-span-full py-12 text-center text-muted italic">Carregando catálogo de serviços...</div>
-          ) : filteredServices?.length === 0 ? (
-            <div className="col-span-full py-12 text-center text-muted italic">Nenhum serviço encontrado.</div>
+            <div className="col-span-full py-20 text-center text-muted italic font-medium">Sincronizando catálogo...</div>
+          ) : services?.length === 0 ? (
+            <div className="col-span-full py-20 text-center text-muted italic font-medium">Nenhum serviço disponível</div>
           ) : (
-            filteredServices?.map((service) => (
+            services?.map((service) => (
               <motion.div 
                 key={service.id}
                 layout
-                initial={{ opacity: 0, scale: 0.9 }}
+                initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className={`glass p-6 rounded-2xl border transition-all group relative ${!service.isActive ? 'opacity-60 border-dashed border-white/20' : 'border-white/10 hover:border-primary/40'}`}
+                exit={{ opacity: 0, scale: 0.98 }}
+                className="p-8 bg-secondary/20 border border-border rounded-3xl hover:border-zinc-700 transition-all group relative"
               >
-                {!service.isActive && (
-                  <div className="absolute top-3 right-3 bg-red-500/10 text-red-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-                    Inativo
-                  </div>
-                )}
-                
-                <div className="flex items-center gap-4 mb-6">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${service.isActive ? 'bg-primary/10 text-primary' : 'bg-secondary text-muted'}`}>
-                    <Scissors className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg leading-tight">{service.name}</h3>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-muted">
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> {service.durationMinutes} min
-                      </span>
+                <div className="flex items-start justify-between">
+                  <div className="space-y-4">
+                    <div>
+                        <span className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] mb-2 block">Categoria — Geral</span>
+                        <h3 className="text-xl font-bold tracking-tight">{service.name}</h3>
+                    </div>
+                    
+                    <div className="flex items-center gap-6">
+                      <div className="flex items-center gap-2 text-primary font-bold">
+                        <DollarSign className="w-4 h-4" />
+                        <span>R$ {Number(service.price).toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted font-medium text-xs uppercase tracking-widest">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{service.durationMinutes} minutos</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="text-2xl font-black text-gold">
-                    <span className="text-xs font-normal text-muted mr-1">R$</span>
-                    {Number(service.price).toFixed(2)}
-                  </div>
-
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button 
                       onClick={() => handleEdit(service)}
-                      className="p-2 hover:bg-white/10 rounded-lg text-muted hover:text-white transition-colors"
+                      className="p-3 bg-white text-black rounded-xl hover:opacity-80 transition-opacity"
                       title="Editar"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
-                    {service.isActive && (
-                      <button 
-                        onClick={() => handleDelete(service.id)}
-                        className="p-2 hover:bg-red-500/10 rounded-lg text-muted hover:text-red-500 transition-colors"
-                        title="Inativar"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
+                    <button 
+                      onClick={() => handleDelete(service.id)}
+                      className="p-3 bg-secondary border border-border rounded-xl text-muted hover:text-red-500 hover:border-red-500/20 transition-colors"
+                      title="Excluir"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
+                </div>
+                
+                <div className="absolute bottom-6 right-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <Scissors className="w-12 h-12" />
                 </div>
               </motion.div>
             ))

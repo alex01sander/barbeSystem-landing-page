@@ -140,10 +140,13 @@ export async function deleteService(id: string): Promise<void> {
 
 /* APPOINTMENT METHODS */
 
-export async function getAppointments(date?: string): Promise<Appointment[]> {
-  const { data } = await api.get("/appointments", {
-    params: { date }
-  });
+export async function getAppointments(date?: string, barberId?: string, startDate?: string, endDate?: string): Promise<Appointment[]> {
+  const params: any = { date };
+  if (barberId) params.barberId = barberId;
+  if (startDate) params.startDate = startDate;
+  if (endDate) params.endDate = endDate;
+  
+  const { data } = await api.get("/appointments", { params });
   return data;
 }
 

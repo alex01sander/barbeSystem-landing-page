@@ -1,64 +1,133 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
+import { getFinancialSummary, getAppointments } from "@/services/api";
 import { 
-  Users, 
+  DollarSign, 
   Calendar, 
-  TrendingUp,
-  DollarSign
+  TrendingUp, 
+  Users,
+  ArrowUpRight,
+  ArrowDownRight,
+  Clock
 } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export default function DashboardHome() {
+  const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0];
+
+  const { data: summary } = useQuery({
+    queryKey: ["financial-summary", startOfMonth, today],
+    queryFn: () => getFinancialSummary(startOfMonth, today)
+  });
+
+  const { data: appointments } = useQuery({
+    queryKey: ["appointments-today", today],
+    queryFn: () => getAppointments(today)
+  });
+
   return (
-    <div className="p-8 space-y-8">
-      {/* Stats Grid */}
+    <div className="space-y-10 max-w-7xl">
+      {/* Welcome Header */}
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight">Visão Geral</h1>
+        <p className="text-muted text-sm mt-1">Bem-vindo ao centro de comando da sua barbearia.</p>
+      </div>
+
+      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard label="Atendimentos Hoje" value="12" icon={<Calendar className="text-primary" />} />
-        <StatCard label="Novos Clientes" value="48" icon={<Users className="text-primary" />} />
-        <StatCard label="Receita Diária" value="R$ 450,00" icon={<TrendingUp className="text-primary" />} />
-        <StatCard label="Faturamento Mês" value="R$ 12.840" icon={<DollarSign className="text-primary" />} />
+        <StatCard 
+          title="Faturamento Mensal" 
+          value={`R$ ${summary?.totalIncomes.toFixed(2) || "0,00"}`} 
+          icon={<DollarSign className="w-4 h-4" />}
+          trend="+12% que mês anterior"
+          positive
+        />
+        <StatCard 
+          title="Total de Saídas" 
+          value={`R$ ${summary?.totalExpenses.toFixed(2) || "0,00"}`} 
+          icon={<ArrowDownRight className="w-4 h-4" />}
+          trend="-2% que mês anterior"
+          positive={false}
+        />
+        <StatCard 
+          title="Agendamentos Hoje" 
+          value={appointments?.length.toString() || "0"} 
+          icon={<Calendar className="w-4 h-4" />}
+          trend="8 slots disponíveis"
+        />
+        <StatCard 
+          title="Novos Clientes" 
+          value="24" 
+          icon={<Users className="w-4 h-4" />}
+          trend="+5 essa semana"
+          positive
+        />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-         <div className="lg:col-span-2 glass rounded-2xl p-8 h-96 flex items-center justify-center border border-white/10">
-            <p className="text-muted">Espaço reservado para o Gráfico de Faturamento</p>
-         </div>
-         <div className="glass rounded-2xl p-8 h-96 border border-white/10">
-            <h3 className="font-bold mb-4">Próximos Agendamentos</h3>
-            <div className="space-y-4">
-              <AppointmentItem name="Carlos Oliveira" time="14:30" service="Corte + Barba" />
-              <AppointmentItem name="Ricardo Silva" time="15:15" service="Corte Degradê" />
-              <AppointmentItem name="Marcos Souza" time="16:00" service="Barba" />
-            </div>
-         </div>
-      </div>
-    </div>
-  );
-}
+      <div className="grid grid-cols-1 gap-10">
+        {/* Próximos Atendimentos */}
+        <div className="flex flex-col gap-6">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-lg flex items-center gap-2">
+              <Clock className="w-5 h-5 text-muted" /> Próximos Agendamentos
+            </h3>
+            <button className="text-xs font-bold text-muted hover:text-white transition-colors uppercase tracking-widest">
+              Ver Agenda Completa
+            </button>
+          </div>
 
-function StatCard({ label, value, icon }: { label: string, value: string, icon: React.ReactNode }) {
-  return (
-    <div className="glass p-6 rounded-2xl border border-white/10 hover:border-primary/30 transition-all group">
-      <div className="flex items-center justify-between mb-4">
-        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-          {icon}
+          <div className="space-y-3">
+            {appointments?.slice(0, 5).map((app) => (
+              <div key={app.id} className="flex items-center justify-between p-5 bg-secondary/30 border border-border rounded-xl hover:border-zinc-700 transition-all group">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center font-bold text-xs border border-border group-hover:bg-background transition-colors">
+                    {app.client.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-semibold">{app.client.name}</h4>
+                    <p className="text-[11px] text-muted flex items-center gap-2 mt-0.5 uppercase tracking-wider font-medium">
+                       <span className="text-white">{format(new Date(app.date), 'HH:mm')}</span> • {app.service.name}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                   <p className="text-[10px] text-muted font-bold uppercase tracking-widest mb-1">Barbeiro</p>
+                   <p className="text-xs font-medium">{app.barber.name}</p>
+                </div>
+              </div>
+            ))}
+            {(!appointments || appointments.length === 0) && (
+              <div className="py-20 text-center border-2 border-dashed border-border rounded-2xl opacity-40">
+                <p className="text-sm italic">Nenhum agendamento para hoje</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-      <p className="text-muted text-sm uppercase tracking-wider font-medium">{label}</p>
-      <h3 className="text-2xl font-bold mt-1">{value}</h3>
     </div>
   );
 }
 
-function AppointmentItem({ name, time, service }: { name: string, time: string, service: string }) {
+function StatCard({ title, value, icon, trend, positive = true }: any) {
   return (
-    <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-white/5">
-      <div>
-        <p className="font-semibold text-sm">{name}</p>
-        <p className="text-xs text-muted">{service}</p>
+    <div className="p-6 bg-secondary/20 border border-border rounded-2xl hover:border-zinc-700 transition-all flex flex-col gap-4">
+      <div className="flex items-center justify-between">
+        <div className="p-2 bg-secondary rounded-lg border border-border text-muted">
+          {icon}
+        </div>
+        {trend && (
+           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${positive ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
+             {trend}
+           </span>
+        )}
       </div>
-      <span className="text-xs font-bold bg-primary/20 text-primary px-2 py-1 rounded-lg">
-        {time}
-      </span>
+      <div>
+        <p className="text-[10px] uppercase font-bold text-muted tracking-widest mb-1">{title}</p>
+        <p className="text-2xl font-semibold tracking-tight">{value}</p>
+      </div>
     </div>
   );
 }

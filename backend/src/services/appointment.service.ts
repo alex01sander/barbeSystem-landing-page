@@ -8,22 +8,25 @@ const serviceRepository = new ServiceRepository();
 const clientRepository = new ClientRepository();
 
 export class AppointmentService {
-  async list(filters: { barberId?: string; clientId?: string; date?: string }) {
-    let startDate: Date | undefined;
-    let endDate: Date | undefined;
+  async list(filters: { barberId?: string; clientId?: string; date?: string; startDate?: string; endDate?: string }) {
+    let start: Date | undefined;
+    let end: Date | undefined;
 
-    if (filters.date) {
-      startDate = new Date(filters.date);
-      startDate.setHours(0, 0, 0, 0);
+    if (filters.startDate && filters.endDate) {
+      start = new Date(filters.startDate);
+      end = new Date(filters.endDate);
+    } else if (filters.date) {
+      start = new Date(filters.date);
+      start.setHours(0, 0, 0, 0);
       
-      endDate = new Date(filters.date);
-      endDate.setHours(23, 59, 59, 999);
+      end = new Date(filters.date);
+      end.setHours(23, 59, 59, 999);
     }
 
     return appointmentRepository.findAll({
       ...filters,
-      startDate,
-      endDate
+      startDate: start,
+      endDate: end
     });
   }
 
@@ -71,6 +74,22 @@ export class AppointmentService {
     const appointment = await appointmentRepository.findById(id);
     if (!appointment) throw new Error("Agendamento não encontrado");
 
-    return appointmentRepository.updateStatus(id, status);
+    const updated = await appointmentRepository.updateStatus(id, status);
+
+    // Se o status for concluído, lança automaticamente no financeiro
+    if (status === "COMPLETED") {
+       await prisma.financialTransaction.create({
+         data: {
+           type: "INCOME",
+           category: "SERVICE",
+           amount: Number(appointment.totalPrice),
+           description: `Serviço: ${appointment.service.name} — Cliente: ${appointment.client.name}`,
+           date: new Date(),
+           appointmentId: appointment.id
+         }
+       });
+    }
+
+    return updated;
   }
 }

@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { X, Scissors, DollarSign, Clock, CheckCircle, XCircle } from "lucide-react";
+import { X, Scissors, Clock, DollarSign, Tag } from "lucide-react";
 import { createService, updateService } from "@/services/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { Service } from "@/types";
@@ -13,30 +13,18 @@ interface ServiceModalProps {
   serviceToEdit?: Service | null;
 }
 
-const durationOptions = [
-  { label: "15 min", value: 15 },
-  { label: "30 min", value: 30 },
-  { label: "45 min", value: 45 },
-  { label: "1 hora", value: 60 },
-  { label: "1h 15min", value: 75 },
-  { label: "1h 30min", value: 90 },
-  { label: "2 horas", value: 120 },
-];
-
 export function ServiceModal({ isOpen, onClose, serviceToEdit }: ServiceModalProps) {
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
-  const [durationMinutes, setDurationMinutes] = useState(30);
-  const [isActive, setIsActive] = useState(true);
+  const [durationMinutes, setDurationMinutes] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (serviceToEdit) {
       setName(serviceToEdit.name);
       setPrice(serviceToEdit.price.toString());
-      setDurationMinutes(serviceToEdit.durationMinutes);
-      setIsActive(serviceToEdit.isActive);
+      setDurationMinutes(serviceToEdit.durationMinutes.toString());
     } else {
       resetForm();
     }
@@ -60,8 +48,7 @@ export function ServiceModal({ isOpen, onClose, serviceToEdit }: ServiceModalPro
   function resetForm() {
     setName("");
     setPrice("");
-    setDurationMinutes(30);
-    setIsActive(true);
+    setDurationMinutes("");
     setError("");
   }
 
@@ -69,16 +56,15 @@ export function ServiceModal({ isOpen, onClose, serviceToEdit }: ServiceModalPro
     e.preventDefault();
     setError("");
 
-    if (!name || !price) {
-      setError("Nome e preço são obrigatórios");
+    if (!name || !price || !durationMinutes) {
+      setError("Preencha todos os campos obrigatórios");
       return;
     }
 
     mutation.mutate({
       name,
       price: parseFloat(price),
-      durationMinutes,
-      isActive
+      durationMinutes: parseInt(durationMinutes),
     });
   }
 
@@ -86,109 +72,102 @@ export function ServiceModal({ isOpen, onClose, serviceToEdit }: ServiceModalPro
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          className="absolute inset-0 bg-background/80 backdrop-blur-sm"
         />
         
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="glass w-full max-w-md rounded-2xl overflow-hidden relative z-10 border border-white/10"
+          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+          className="bg-secondary border border-border w-full max-w-md rounded-[24px] overflow-hidden relative z-10 shadow-2xl"
         >
-          <div className="p-6 border-b border-white/10 flex items-center justify-between gold-gradient">
-            <h2 className="text-xl font-bold text-black flex items-center gap-2">
-              <Scissors className="w-5 h-5" />
-              {serviceToEdit ? "Editar Serviço" : "Novo Serviço"}
-            </h2>
-            <button onClick={onClose} className="text-black/70 hover:text-black transition-colors">
-              <X className="w-6 h-6" />
+          <div className="px-8 pt-8 pb-4 flex items-center justify-between">
+            <div>
+               <h2 className="text-xl font-bold tracking-tight text-white">
+                 {serviceToEdit ? "Editar Serviço" : "Novo Serviço"}
+               </h2>
+               <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] mt-1">Configuração de Catálogo</p>
+            </div>
+            <button onClick={onClose} className="p-2 text-muted hover:text-white transition-colors bg-background border border-border rounded-lg">
+              <X className="w-5 h-5" />
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
-            {/* Nome */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted flex items-center gap-2">
-                <Scissors className="w-4 h-4" /> Nome do Serviço
-              </label>
-              <input 
-                type="text" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: Corte Degradê"
-                className="w-full bg-secondary/50 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary/50"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              {/* Preço */}
+          <form onSubmit={handleSubmit} className="p-8 pt-4 space-y-8">
+            <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-muted flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" /> Preço (R$)
+                <label className="text-[10px] uppercase font-bold text-muted tracking-widest flex items-center gap-2">
+                   <Tag className="w-3.5 h-3.5" /> Nome do Serviço
                 </label>
                 <input 
-                  type="number" 
-                  step="0.01"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  placeholder="0,00"
-                  className="w-full bg-secondary/50 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary/50"
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ex: Corte de Cabelo"
+                  className="w-full bg-background border border-border rounded-xl p-4 text-sm focus:outline-none focus:border-white transition-all font-medium"
                 />
               </div>
 
-              {/* Duração */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-muted flex items-center gap-2">
-                  <Clock className="w-4 h-4" /> Duração
-                </label>
-                <select 
-                  value={durationMinutes}
-                  onChange={(e) => setDurationMinutes(parseInt(e.target.value))}
-                  className="w-full bg-secondary/50 border border-white/10 rounded-xl p-3 focus:outline-none focus:border-primary/50 appearance-none"
-                >
-                  {durationOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-bold text-muted tracking-widest flex items-center gap-2">
+                    <DollarSign className="w-3.5 h-3.5" /> Preço Sugerido
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted opacity-40">R$</span>
+                    <input 
+                      type="number" 
+                      step="0.01"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      placeholder="0,00"
+                      className="w-full bg-background border border-border rounded-xl pl-10 pr-4 py-4 text-sm focus:outline-none focus:border-white transition-all font-medium"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] uppercase font-bold text-muted tracking-widest flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5" /> Duração (min)
+                  </label>
+                  <input 
+                    type="number" 
+                    value={durationMinutes}
+                    onChange={(e) => setDurationMinutes(e.target.value)}
+                    placeholder="Ex: 30"
+                    className="w-full bg-background border border-border rounded-xl p-4 text-sm focus:outline-none focus:border-white transition-all font-medium"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Status (Toggle) */}
-            {serviceToEdit && (
-              <div className="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5">
-                <div className="flex items-center gap-3">
-                  {isActive ? <CheckCircle className="text-green-500 w-5 h-5" /> : <XCircle className="text-red-500 w-5 h-5" />}
-                  <span className="text-sm font-medium">{isActive ? "Serviço Ativo" : "Serviço Inativo"}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsActive(!isActive)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${isActive ? 'bg-primary' : 'bg-secondary'}`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isActive ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-              </div>
-            )}
-
             {error && (
-              <div className="text-red-500 text-sm bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+              <div className="text-red-400 text-[11px] font-bold bg-red-400/5 p-3 rounded-lg border border-red-400/10 uppercase tracking-wider">
                 {error}
               </div>
             )}
 
-            <button 
-              type="submit"
-              disabled={mutation.isPending}
-              className="w-full gold-gradient text-black font-bold py-4 rounded-xl hover:opacity-90 transition-opacity shadow-lg shadow-primary/10 flex items-center justify-center gap-2"
-            >
-              {mutation.isPending ? "Salvando..." : serviceToEdit ? "Salvar Alterações" : "Criar Serviço"}
-            </button>
+            <div className="pt-4 flex gap-4">
+               <button 
+                  type="button"
+                  onClick={onClose}
+                  className="flex-1 bg-background border border-border text-muted font-bold text-xs py-4 rounded-xl hover:text-white transition-all uppercase tracking-widest"
+               >
+                  Cancelar
+               </button>
+               <button 
+                  type="submit"
+                  disabled={mutation.isPending}
+                  className="flex-[2] bg-white text-black font-bold text-xs py-4 rounded-xl hover:opacity-90 disabled:opacity-50 transition-all uppercase tracking-widest shadow-xl shadow-white/5"
+               >
+                  {mutation.isPending ? "Salvando..." : serviceToEdit ? "Salvar Alterações" : "Criar Serviço"}
+               </button>
+            </div>
           </form>
         </motion.div>
       </div>
