@@ -6,8 +6,8 @@ import { ensureAdmin } from "../middlewares/role.middleware";
 const router = Router();
 const barberController = new BarberController();
 
-// Listagem é aberta para qualquer usuário autenticado
-router.get("/", authMiddleware, barberController.index);
+// Listagem é aberta (Pública para a Landing Page)
+router.get("/", barberController.index);
 
 // Cadastro, Edição e Exclusão são restritos a ADMIN
 router.post("/", authMiddleware, ensureAdmin, barberController.store);

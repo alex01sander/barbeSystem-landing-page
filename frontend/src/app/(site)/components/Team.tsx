@@ -55,9 +55,9 @@ export function Team() {
                 className="group relative"
               >
                 <div className="relative aspect-[3/4] overflow-hidden border border-white/5 bg-zinc-950">
-                  {barber.photo ? (
+                  {barber.photoUrl ? (
                     <img 
-                      src={barber.photo} 
+                      src={barber.photoUrl} 
                       alt={barber.name} 
                       className="w-full h-full object-cover grayscale transition-all duration-1000 group-hover:grayscale-0 group-hover:scale-110"
                     />
@@ -75,7 +75,7 @@ export function Team() {
                   <div className="absolute bottom-8 left-8 right-8 translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                     <h3 className="font-display text-2xl font-black uppercase tracking-tighter text-white">{barber.name}</h3>
                     <p className="text-[8px] font-bold uppercase tracking-[0.3em] text-zinc-400 mt-2">
-                      {barber.role === 'ADMIN' ? 'Mestre Barbeiro' : 'Especialista'}
+                      Barbeiro Especialista
                     </p>
                   </div>
                 </div>

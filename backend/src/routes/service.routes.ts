@@ -6,9 +6,9 @@ import { ensureAdmin } from "../middlewares/role.middleware";
 const router = Router();
 const serviceController = new ServiceController();
 
-// Rotas públicas ou autenticadas (Barbeiros e Clientes podem ver)
-router.get("/", authMiddleware, serviceController.index);
-router.get("/:id", authMiddleware, serviceController.show);
+// Rotas públicas (Landing Page)
+router.get("/", serviceController.index);
+router.get("/:id", serviceController.show);
 
 // Rotas exclusivas de ADMIN (Gerenciar catálogo)
 router.post("/", authMiddleware, ensureAdmin, serviceController.store);
