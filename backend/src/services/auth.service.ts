@@ -14,11 +14,6 @@ export class AuthService {
       throw new Error("Credenciais inválidas");
     }
 
-    // 2. Verificar se está ativo
-    if (!user.isActive) {
-      throw new Error("Usuário desativado");
-    }
-
     // 3. Comparar senhas
     const passwordMatch = await bcrypt.compare(password, user.password);
 

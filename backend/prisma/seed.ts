@@ -5,21 +5,31 @@ import "dotenv/config";
 async function main() {
   console.log("Seeding database...");
 
-  const hashedPassword = await bcrypt.hash("admin123", 10);
+  const email = "admin@barber.com";
+  const password = "admin123";
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   // Create a default admin
   const admin = await prisma.user.upsert({
-    where: { email: "admin@barber.com" },
-    update: {},
+    where: { email: email },
+    update: {
+      password: hashedPassword,
+      name: "Admin Principal",
+      role: "ADMIN"
+    },
     create: {
-      email: "admin@barber.com",
+      email: email,
       name: "Admin Principal",
       password: hashedPassword,
       role: "ADMIN",
     },
   });
 
-  console.log("Admin created:", admin.email);
+  console.log("-----------------------------------------");
+  console.log("USUÁRIO ADMIN CRIADO/RESETADO!");
+  console.log(`E-mail: ${admin.email}`);
+  console.log(`Senha: ${password}`);
+  console.log("-----------------------------------------");
 
   // Create some basic services
   const services = [
