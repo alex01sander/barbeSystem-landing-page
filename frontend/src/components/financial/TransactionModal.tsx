@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { X, DollarSign, Tag, FileText, Calendar } from "lucide-react";
 import { createTransaction } from "@/services/api";
+import { TransactionType, TransactionCategory } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 
@@ -14,8 +15,8 @@ interface TransactionModalProps {
 
 export function TransactionModal({ isOpen, onClose }: TransactionModalProps) {
   const queryClient = useQueryClient();
-  const [type, setType] = useState<"INCOME" | "EXPENSE">("INCOME");
-  const [category, setCategory] = useState("OTHER");
+  const [type, setType] = useState<TransactionType>("INCOME");
+  const [category, setCategory] = useState<TransactionCategory>("OTHER");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
@@ -128,7 +129,7 @@ export function TransactionModal({ isOpen, onClose }: TransactionModalProps) {
                     <label className="text-[10px] uppercase font-bold text-muted tracking-widest">Categoria</label>
                     <select 
                       value={category}
-                      onChange={(e) => setCategory(e.target.value)}
+                      onChange={(e) => setCategory(e.target.value as TransactionCategory)}
                       className="w-full bg-background border border-border rounded-xl p-3 text-sm focus:outline-none focus:border-white transition-all appearance-none cursor-pointer"
                     >
                       <option value="SALARY">Salários</option>

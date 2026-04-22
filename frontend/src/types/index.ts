@@ -33,11 +33,14 @@ export interface Client {
   name: string;
   phone: string;
   email?: string;
+  birthDate?: string;
+  notes?: string;
 }
 
 export interface Service {
   id: string;
   name: string;
+  description?: string;
   price: number;
   durationMinutes: number;
   isActive: boolean;
@@ -45,12 +48,14 @@ export interface Service {
 
 export interface CreateServiceDTO {
   name: string;
+  description?: string;
   price: number;
   durationMinutes: number;
 }
 
 export interface UpdateServiceDTO {
   name?: string;
+  description?: string;
   price?: number;
   durationMinutes?: number;
   isActive?: boolean;

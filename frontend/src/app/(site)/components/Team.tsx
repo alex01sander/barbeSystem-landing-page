@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getBarbers } from "@/services/api";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 
 export function Team() {
   const { data: barbers, isLoading } = useQuery({
@@ -10,7 +10,7 @@ export function Team() {
     queryFn: getBarbers,
   });
 
-  const container = {
+  const container: Variants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
@@ -18,7 +18,7 @@ export function Team() {
     }
   };
 
-  const item = {
+  const item: Variants = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0 }
   };

@@ -10,7 +10,7 @@ export function About() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1, ease: "easeOut" }}
           className="space-y-8 md:space-y-12"
         >
           <div className="space-y-4 md:space-y-6">
@@ -38,7 +38,7 @@ export function About() {
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
           className="relative aspect-[4/5] bg-zinc-900 border border-white/5 overflow-hidden group"
         >
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1593702295094-ada74bc4a39d?q=80&w=2070')] bg-cover bg-center grayscale transition-transform duration-1000 group-hover:scale-110" />
