@@ -15,13 +15,13 @@ export function Gallery() {
   ];
 
   return (
-    <section id="galeria" className="py-40 px-8 bg-black">
+    <section id="galeria" className="py-24 md:py-40 px-6 md:px-8 bg-black">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-32 text-center">
-          <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-zinc-500">Visual Portfolio</span>
-          <h2 className="font-display text-5xl md:text-8xl font-black mt-6 uppercase tracking-tighter">
+        <div className="mb-16 md:mb-32 text-center">
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.5em] text-zinc-500">Visual Portfolio</span>
+          <h2 className="font-display text-4xl md:text-8xl font-black mt-6 uppercase tracking-tighter">
             cortes<br />
-            <span className="text-stroke">Artes</span>
+            <span className="text-stroke">& Artes</span>
           </h2>
         </div>
 

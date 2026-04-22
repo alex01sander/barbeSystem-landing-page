@@ -20,7 +20,7 @@ export function Hero() {
   };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-8 pt-20 overflow-hidden bg-black">
+    <section className="relative min-h-screen flex items-center justify-center px-6 md:px-8 pt-20 overflow-hidden bg-black">
       {/* Background Banner with Overlay */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2070')] bg-cover bg-center grayscale opacity-60 mix-blend-luminosity scale-110" />
@@ -36,12 +36,12 @@ export function Hero() {
           className="flex flex-col items-center text-center"
         >
           <motion.div variants={item} className="mb-6">
-            <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-zinc-500">Premium Barbering Experience</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.5em] text-zinc-500">Premium Barbering Experience</span>
           </motion.div>
 
           <motion.h1 
             variants={item}
-            className="font-display text-6xl md:text-[120px] font-black leading-[0.9] tracking-[-0.04em] mb-8 uppercase"
+            className="font-display text-5xl sm:text-7xl md:text-[120px] font-black leading-[0.9] tracking-[-0.04em] mb-8 uppercase"
           >
             PRECISÃO <br />
             <span className="text-stroke">DEFINIDA</span>
@@ -49,17 +49,17 @@ export function Hero() {
 
           <motion.p 
             variants={item}
-            className="font-body text-sm md:text-base text-zinc-400 max-w-lg mb-12 leading-relaxed tracking-wide uppercase"
+            className="font-body text-xs md:text-base text-zinc-400 max-w-lg mb-12 leading-relaxed tracking-wide uppercase px-4"
           >
             A excelência que você conhece. <br />
             Agora em um espaço exclusivo, projetado para o homem moderno que não abre mão do clássico.
           </motion.p>
 
-          <motion.div variants={item} className="flex flex-col sm:flex-row gap-6">
-            <a href="#agendamento" className="bw-button">
+          <motion.div variants={item} className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto px-6 sm:px-0">
+            <a href="#agendamento" className="bw-button w-full sm:w-auto text-center">
               Reservar Horário
             </a>
-            <a href="#servicos" className="bw-button-outline">
+            <a href="#servicos" className="bw-button-outline w-full sm:w-auto text-center">
               Ver Catálogo
             </a>
           </motion.div>

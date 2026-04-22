@@ -4,24 +4,24 @@ import { motion } from "framer-motion";
 
 export function About() {
   return (
-    <section id="sobre" className="py-40 px-8 bg-black">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+    <section id="sobre" className="py-24 md:py-40 px-6 md:px-8 bg-black">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 md:gap-24 items-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="space-y-12"
+          className="space-y-8 md:space-y-12"
         >
-          <div className="space-y-6">
-            <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-zinc-500">The Legacy</span>
-            <h2 className="font-display text-5xl md:text-7xl font-black leading-tight uppercase tracking-tighter">
+          <div className="space-y-4 md:space-y-6">
+            <span className="text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.5em] text-zinc-500">The Legacy</span>
+            <h2 className="font-display text-4xl md:text-7xl font-black leading-tight uppercase tracking-tighter">
               A ARTE DA <br />
               <span className="text-stroke">TRADIÇÃO</span>
             </h2>
           </div>
           
-          <div className="font-body text-zinc-500 leading-relaxed text-base md:text-lg space-y-8 max-w-xl uppercase tracking-wider">
+          <div className="font-body text-zinc-500 leading-relaxed text-sm md:text-lg space-y-6 md:space-y-8 max-w-xl uppercase tracking-wider">
             <p>
               IdalgoCortes não é apenas uma barbearia. É a manifestação de décadas de domínio sobre a lâmina e a tesoura. 
             </p>

@@ -24,18 +24,18 @@ export function Team() {
   };
 
   return (
-    <section id="equipe" className="py-40 px-8 bg-black">
+    <section id="equipe" className="py-24 md:py-40 px-6 md:px-8 bg-black">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-32">
-          <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-zinc-500">Master Barbers</span>
-          <h2 className="font-display text-5xl md:text-8xl font-black mt-6 uppercase tracking-tighter">
+        <div className="mb-16 md:mb-32">
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] md:tracking-[0.5em] text-zinc-500">Master Barbers</span>
+          <h2 className="font-display text-4xl md:text-8xl font-black mt-6 uppercase tracking-tighter">
             NOSSA <br />
             <span className="text-stroke">EQUIPE</span>
           </h2>
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
             {[1, 2, 3, 4].map(i => (
               <div key={i} className="aspect-[3/4] bg-zinc-950 animate-pulse border border-white/5" />
             ))}
@@ -46,7 +46,7 @@ export function Team() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12"
           >
             {barbers?.map((barber) => (
               <motion.div

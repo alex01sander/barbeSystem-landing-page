@@ -50,7 +50,7 @@ export default function LoginPage() {
             <div className="w-16 h-16 gold-gradient rounded-full flex items-center justify-center mb-4 shadow-lg">
               <Scissors className="text-black w-8 h-8" />
             </div>
-            <h1 className="text-3xl font-bold text-gold">BarberSystem</h1>
+            <h1 className="text-3xl font-bold text-gold">IdalgoCortes</h1>
             <p className="text-muted text-sm mt-2">Acesse sua conta administrativa</p>
           </div>
 
@@ -112,7 +112,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-8 text-center text-sm text-muted">
-            <p>© 2026 BarberSystem Premium. Todos os direitos reservados.</p>
+            <p>© 2026 IdalgoCortes Premium. Todos os direitos reservados.</p>
           </div>
         </div>
       </motion.div>

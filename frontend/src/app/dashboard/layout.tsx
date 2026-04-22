@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   BarChart3, 
   Users, 
@@ -48,7 +49,124 @@ export default function DashboardLayout({
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background flex text-foreground font-sans">
+    <div className="min-h-screen bg-background flex text-foreground font-sans overflow-x-hidden">
+      {/* Mobile Menu Overlay & Sidebar */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] md:hidden"
+            />
+            
+            {/* Mobile Sidebar */}
+            <motion.aside
+              initial={{ x: -280 }}
+              animate={{ x: 0 }}
+              exit={{ x: -280 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 w-[280px] bg-background border-r border-border z-[70] md:hidden flex flex-col"
+            >
+              <div className="h-20 flex items-center justify-between px-8 border-b border-border">
+                <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setIsMobileMenuOpen(false)}>
+                  <div className="w-6 h-6 bg-white rounded flex items-center justify-center">
+                    <Scissors className="text-black w-3.5 h-3.5" />
+                  </div>
+                  <span className="font-bold text-lg tracking-tight uppercase">Barber<span className="text-muted font-light">Sys</span></span>
+                </Link>
+                <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-muted">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+                <NavItem 
+                  href="/dashboard" 
+                  icon={<BarChart3 className="w-4 h-4" />} 
+                  label="Dashboard" 
+                  active={pathname === "/dashboard"} 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                />
+                <NavItem 
+                  href="/dashboard/appointments" 
+                  icon={<Calendar className="w-4 h-4" />} 
+                  label="Agenda" 
+                  active={pathname === "/dashboard/appointments"} 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                />
+                <div className="pt-4 pb-2 px-4 text-[10px] font-bold text-muted uppercase tracking-widest">Gestão</div>
+                <NavItem 
+                  href="/dashboard/clients" 
+                  icon={<Users className="w-4 h-4" />} 
+                  label="Clientes" 
+                  active={pathname === "/dashboard/clients"} 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                />
+                <NavItem 
+                  href="/dashboard/services" 
+                  icon={<Scissors className="w-4 h-4" />} 
+                  label="Serviços" 
+                  active={pathname === "/dashboard/services"} 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                />
+                <NavItem 
+                  href="/dashboard/team" 
+                  icon={<UserCog className="w-4 h-4" />} 
+                  label="Equipe" 
+                  active={pathname === "/dashboard/team"} 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                />
+                <div className="pt-4 pb-2 px-4 text-[10px] font-bold text-muted uppercase tracking-widest">Vendas</div>
+                <NavItem 
+                  href="/dashboard/pdv" 
+                  icon={<ShoppingBag className="w-4 h-4" />} 
+                  label="Ponto de Venda" 
+                  active={pathname === "/dashboard/pdv"} 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                />
+                <NavItem 
+                  href="/dashboard/products" 
+                  icon={<Store className="w-4 h-4" />} 
+                  label="Estoque" 
+                  active={pathname === "/dashboard/products"} 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                />
+                <NavItem 
+                  href="/dashboard/financial" 
+                  icon={<DollarSign className="w-4 h-4" />} 
+                  label="Financeiro" 
+                  active={pathname === "/dashboard/financial"} 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                />
+              </nav>
+
+              <div className="p-4 border-t border-border bg-secondary/30">
+                <div className="flex items-center gap-3 px-4 py-3 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted border border-border">
+                     {user.name.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                     <p className="text-xs font-bold truncate">{user.name}</p>
+                     <p className="text-[10px] text-muted capitalize">{user.role.toLowerCase()}</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={handleLogout}
+                  className="w-full flex items-center gap-3 px-4 py-2 text-muted hover:text-red-400 transition-colors text-sm rounded-lg"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sair
+                </button>
+              </div>
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
       {/* Sidebar Desktop */}
       <aside className="w-64 bg-background border-r border-border hidden md:flex flex-col fixed inset-y-0 z-50">
         <div className="h-20 flex items-center px-8">
@@ -145,7 +263,7 @@ export default function DashboardLayout({
              pathname.includes("team") ? "Equipe Profissional" : "Gestão"}
           </h2>
           
-          <button className="md:hidden p-2 text-muted" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+          <button className="md:hidden p-2 text-muted hover:text-white transition-colors" onClick={() => setIsMobileMenuOpen(true)}>
             <Menu className="w-6 h-6" />
           </button>
 
@@ -158,7 +276,7 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
           {children}
         </main>
       </div>
@@ -166,12 +284,28 @@ export default function DashboardLayout({
   );
 }
 
-function NavItem({ href, icon, label, active = false }: { href: string, icon: React.ReactNode, label: string, active?: boolean }) {
+function NavItem({ 
+  href, 
+  icon, 
+  label, 
+  active = false, 
+  onClick 
+}: { 
+  href: string, 
+  icon: React.ReactNode, 
+  label: string, 
+  active?: boolean,
+  onClick?: () => void
+}) {
   return (
-    <Link href={href} className={`
-      flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm font-medium
-      ${active ? 'bg-secondary text-white border border-border shadow-sm' : 'text-muted hover:text-white hover:bg-secondary/50'}
-    `}>
+    <Link 
+      href={href} 
+      onClick={onClick}
+      className={`
+        flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm font-medium
+        ${active ? 'bg-secondary text-white border border-border shadow-sm' : 'text-muted hover:text-white hover:bg-secondary/50'}
+      `}
+    >
       <span className={active ? 'text-white' : 'text-muted group-hover:text-white transition-colors'}>
         {icon}
       </span>
