@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { LogIn, Lock, Mail, Scissors } from "lucide-react";
-import { api } from "@/lib/api";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -19,14 +19,19 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await api.post("/auth/login", { email, password });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
       
-      localStorage.setItem("barber-token", response.data.token);
-      localStorage.setItem("barber-user", JSON.stringify(response.data.user));
+      // O Supabase gerencia o token automaticamente nos cookies/localStorage
+      localStorage.setItem("barber-user", JSON.stringify(data.user));
 
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.response?.data?.error || "Falha na autenticação. Verifique os dados.");
+      setError(err.message || "Falha na autenticação. Verifique os dados.");
     } finally {
       setLoading(false);
     }
