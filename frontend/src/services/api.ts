@@ -22,7 +22,10 @@ import {
   CreateProductDTO,
   UpdateProductDTO,
   Sale,
-  CreateSaleDTO
+  CreateSaleDTO,
+  PublicBookingDTO,
+  TransactionType,
+  TransactionCategory
 } from "@/types";
 
 /* PRODUCT METHODS */
@@ -105,7 +108,7 @@ export async function getSales(): Promise<Sale[]> {
     .order("createdAt", { ascending: false });
   
   if (error) throw error;
-  return data as any[];
+  return data as Sale[];
 }
 
 /* BARBER METHODS */
@@ -290,7 +293,7 @@ export async function getAppointments(date?: string, barberId?: string, startDat
   const { data, error } = await query.order("date");
   
   if (error) throw error;
-  return data as any[];
+  return data as Appointment[];
 }
 
 export async function createAppointment(appointmentData: CreateAppointmentDTO): Promise<Appointment> {
@@ -340,8 +343,8 @@ export async function getFinancialSummary(start: string, end: string): Promise<F
 
   if (incError || expError) throw (incError || expError);
 
-  const totalIncomes = incomes.reduce((sum, item) => sum + Number(item.amount), 0);
-  const totalExpenses = expenses.reduce((sum, item) => sum + Number(item.amount), 0);
+  const totalIncomes = (incomes as Pick<FinancialTransaction, 'amount'>[] || []).reduce((sum: number, item) => sum + Number(item.amount), 0);
+  const totalExpenses = (expenses as Pick<FinancialTransaction, 'amount'>[] || []).reduce((sum: number, item) => sum + Number(item.amount), 0);
 
   return {
     totalIncomes,
@@ -362,14 +365,18 @@ export async function getFinancialReports(start: string, end: string): Promise<F
 
   // Agrupamento por categoria e tipo
   const groups: Record<string, number> = {};
-  data.forEach(item => {
+  (data as Pick<FinancialTransaction, 'category' | 'type' | 'amount'>[] || []).forEach((item) => {
     const key = `${item.category}|${item.type}`;
     groups[key] = (groups[key] || 0) + Number(item.amount);
   });
 
   return Object.entries(groups).map(([key, total]) => {
     const [category, type] = key.split("|");
-    return { category, type, total } as any;
+    return { 
+      category: category as TransactionCategory, 
+      type: type as TransactionType, 
+      total 
+    };
   });
 }
 
@@ -382,7 +389,7 @@ export async function getTransactions(start: string, end: string): Promise<Finan
     .order("date", { ascending: false });
 
   if (error) throw error;
-  return data as any[];
+  return data as FinancialTransaction[];
 }
 
 export async function createTransaction(transactionData: CreateTransactionDTO): Promise<FinancialTransaction> {
@@ -422,13 +429,13 @@ export async function getAvailableSlots(barberId: string, serviceId: string, dat
 
   // Lógica simplificada de slots (ex: a cada 30 min)
   const slots: string[] = [];
-  let current = new Date(`${date}T${schedule.startTime}:00`);
+  const current = new Date(`${date}T${schedule.startTime}:00`);
   const end = new Date(`${date}T${schedule.endTime}:00`);
 
   while (current < end) {
     const timeString = current.toTimeString().substring(0, 5);
     // Verificar se o slot está livre
-    const isBusy = appointments.some(a => {
+    const isBusy = (appointments as { date: string }[] || []).some((a) => {
         const aStart = new Date(a.date).toTimeString().substring(0, 5);
         return aStart === timeString;
     });
@@ -440,7 +447,7 @@ export async function getAvailableSlots(barberId: string, serviceId: string, dat
   return slots;
 }
 
-export async function createPublicAppointment(bookingData: any) {
+export async function createPublicAppointment(bookingData: PublicBookingDTO): Promise<Appointment> {
   const { data, error } = await supabase
     .from("appointments")
     .insert([bookingData])
@@ -448,5 +455,5 @@ export async function createPublicAppointment(bookingData: any) {
     .single();
   
   if (error) throw error;
-  return data;
+  return data as Appointment;
 }

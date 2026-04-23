@@ -228,3 +228,12 @@ export interface CreateAppointmentDTO {
   date: string;
   notes?: string;
 }
+
+export interface PublicBookingDTO {
+  serviceId: string;
+  barberId: string;
+  date: string;
+  clientName: string;
+  clientPhone: string;
+  notes?: string;
+}
