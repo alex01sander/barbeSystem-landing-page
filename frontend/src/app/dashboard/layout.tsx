@@ -17,30 +17,44 @@ import {
   X
 } from "lucide-react";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
+
+import { User } from "@supabase/supabase-js";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("barber-user");
-    const token = localStorage.getItem("barber-token");
-
-    if (!token || !storedUser) {
-      router.push("/login");
-      return;
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        // Fallback para o localStorage que o login antigo usava, ou redireciona
+        const storedUser = localStorage.getItem("barber-user");
+        if (!storedUser) {
+          router.push("/login");
+          return;
+        }
+        setUser(JSON.parse(storedUser));
+      } else {
+        setUser(session.user);
+        // Sincroniza o localStorage para compatibilidade se necessário
+        localStorage.setItem("barber-user", JSON.stringify(session.user));
+      }
     }
 
-    setUser(JSON.parse(storedUser));
+    checkSession();
   }, [router]);
 
-  function handleLogout() {
+  async function handleLogout() {
+    await supabase.auth.signOut();
     localStorage.removeItem("barber-token");
     localStorage.removeItem("barber-user");
     router.push("/login");
@@ -147,11 +161,11 @@ export default function DashboardLayout({
               <div className="p-4 border-t border-border bg-secondary/30">
                 <div className="flex items-center gap-3 px-4 py-3 mb-2">
                   <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted border border-border">
-                     {user.name.charAt(0)}
+                     {(user.user_metadata?.name || user.name || user.email || "U").charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                     <p className="text-xs font-bold truncate">{user.name}</p>
-                     <p className="text-[10px] text-muted capitalize">{user.role.toLowerCase()}</p>
+                     <p className="text-xs font-bold truncate">{user.user_metadata?.name || user.name || user.email}</p>
+                     <p className="text-[10px] text-muted capitalize">{(user.user_metadata?.role || user.role || "Membro").toLowerCase()}</p>
                   </div>
                 </div>
                 <button 
@@ -234,11 +248,11 @@ export default function DashboardLayout({
         <div className="p-4 border-t border-border">
           <div className="flex items-center gap-3 px-4 py-3 mb-2">
             <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted border border-border">
-               {user.name.charAt(0)}
+               {(user.user_metadata?.name || user.name || user.email || "U").charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-               <p className="text-xs font-bold truncate">{user.name}</p>
-               <p className="text-[10px] text-muted capitalize">{user.role.toLowerCase()}</p>
+               <p className="text-xs font-bold truncate">{user.user_metadata?.name || user.name || user.email}</p>
+               <p className="text-[10px] text-muted capitalize">{(user.user_metadata?.role || user.role || "Membro").toLowerCase()}</p>
             </div>
           </div>
           <button 

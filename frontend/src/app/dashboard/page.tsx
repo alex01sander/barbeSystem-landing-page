@@ -111,7 +111,15 @@ export default function DashboardHome() {
   );
 }
 
-function StatCard({ title, value, icon, trend, positive = true }: any) {
+interface StatCardProps {
+  title: string;
+  value: string;
+  icon: React.ReactNode;
+  trend?: string;
+  positive?: boolean;
+}
+
+function StatCard({ title, value, icon, trend, positive = true }: StatCardProps) {
   return (
     <div className="p-6 bg-secondary/20 border border-border rounded-2xl hover:border-zinc-700 transition-all flex flex-col gap-4">
       <div className="flex items-center justify-between">

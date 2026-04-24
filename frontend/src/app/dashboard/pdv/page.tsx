@@ -58,7 +58,7 @@ export default function PDVPage() {
       setNotes("");
       setTimeout(() => setSuccess(false), 3000);
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { error?: string } } }) => {
       alert(err.response?.data?.error || "Erro ao processar venda");
     }
   });
@@ -187,7 +187,7 @@ export default function PDVPage() {
               return (
                 <div 
                   key={item.id}
-                  onClick={() => !isOutOfStock && addToCart(item as any, activeTab === 'services' ? 'SERVICE' : 'PRODUCT')}
+                  onClick={() => !isOutOfStock && addToCart(item, activeTab === 'services' ? 'SERVICE' : 'PRODUCT')}
                   className={`p-5 bg-secondary/20 border border-border rounded-2xl transition-all flex flex-col justify-between group h-40 ${isOutOfStock ? 'opacity-30 cursor-not-allowed' : 'hover:border-zinc-500 cursor-pointer'}`}
                 >
                   <div>

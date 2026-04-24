@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { X, User, Phone, Mail, Calendar, FileText } from "lucide-react";
 import { createClient, updateClient } from "@/services/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { Client } from "@/types";
+import { Client, CreateClientDTO, UpdateClientDTO } from "@/types";
 
 interface ClientModalProps {
   isOpen: boolean;
@@ -34,16 +34,16 @@ export function ClientModal({ isOpen, onClose, clientToEdit }: ClientModalProps)
   }, [clientToEdit]);
 
   const mutation = useMutation({
-    mutationFn: (data: any) => 
+    mutationFn: (data: CreateClientDTO | UpdateClientDTO) => 
       clientToEdit 
-        ? updateClient(clientToEdit.id, data) 
-        : createClient(data),
+        ? updateClient(clientToEdit.id, data as UpdateClientDTO) 
+        : createClient(data as CreateClientDTO),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       onClose();
       resetForm();
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { error?: string } } }) => {
       setError(err.response?.data?.error || "Erro ao salvar cliente");
     }
   });

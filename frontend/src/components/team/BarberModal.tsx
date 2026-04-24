@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { X, User, Camera, Trash2, Calendar } from "lucide-react";
 import { createBarber, updateBarber } from "@/services/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { Barber } from "@/types";
+import { Barber, CreateBarberDTO, UpdateBarberDTO } from "@/types";
 
 interface BarberModalProps {
   isOpen: boolean;
@@ -35,16 +35,16 @@ export function BarberModal({ isOpen, onClose, barberToEdit }: BarberModalProps)
   }, [barberToEdit]);
 
   const mutation = useMutation({
-    mutationFn: (data: any) => 
+    mutationFn: (data: CreateBarberDTO | UpdateBarberDTO) => 
       barberToEdit 
-        ? updateBarber(barberToEdit.id, data) 
-        : createBarber(data),
+        ? updateBarber(barberToEdit.id, data as UpdateBarberDTO) 
+        : createBarber(data as CreateBarberDTO),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["barbers"] });
       onClose();
       resetForm();
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { error?: string } } }) => {
       setError(err.response?.data?.error || "Erro ao salvar profissional");
     }
   });

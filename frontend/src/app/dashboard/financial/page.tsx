@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getFinancialSummary, getTransactions } from "@/services/api";
+import { FinancialTransaction } from "@/types";
 import { 
   DollarSign, 
   ArrowUpRight, 
@@ -113,7 +114,7 @@ export default function FinancialPage() {
                  </tr>
                </thead>
                <tbody className="divide-y divide-border/50 font-sans">
-                 {transactions?.map((t: any) => (
+                 {transactions?.map((t: FinancialTransaction) => (
                     <tr key={t.id} className="hover:bg-secondary/20 transition-colors group">
                        <td className="px-8 py-5">
                           <div>
@@ -152,7 +153,15 @@ export default function FinancialPage() {
   );
 }
 
-function SummaryCard({ title, amount, icon, label, highlight = false }: any) {
+interface SummaryCardProps {
+  title: string;
+  amount: string;
+  icon: React.ReactNode;
+  label?: string;
+  highlight?: boolean;
+}
+
+function SummaryCard({ title, amount, icon, label, highlight = false }: SummaryCardProps) {
   return (
     <div className={`p-8 rounded-3xl border transition-all ${highlight ? 'bg-white text-black border-white shadow-xl shadow-white/5' : 'bg-secondary/20 border-border hover:border-zinc-700'}`}>
       <div className="flex items-center justify-between mb-6">

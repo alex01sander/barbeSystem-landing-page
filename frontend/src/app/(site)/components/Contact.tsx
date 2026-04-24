@@ -72,14 +72,16 @@ export function Contact() {
   );
 }
 
-function ContactItem({ icon, title, content, link }: any) {
-  const Wrapper = link ? "a" : "div";
-  return (
-    <Wrapper 
-      href={link} 
-      target={link ? "_blank" : undefined}
-      className={`flex items-center gap-6 md:gap-8 group ${link ? 'cursor-pointer' : ''}`}
-    >
+interface ContactItemProps {
+  icon: React.ReactNode;
+  title: string;
+  content: string;
+  link?: string;
+}
+
+function ContactItem({ icon, title, content, link }: ContactItemProps) {
+  const contentElement = (
+    <>
       <div className="w-12 h-12 md:w-14 md:h-14 rounded-full border border-white/5 flex-shrink-0 flex items-center justify-center transition-all duration-500 group-hover:border-white group-hover:bg-white group-hover:text-black">
         {icon}
       </div>
@@ -87,6 +89,25 @@ function ContactItem({ icon, title, content, link }: any) {
         <h4 className="text-[7px] md:text-[8px] font-black uppercase tracking-[0.3em] text-zinc-600 group-hover:text-white transition-colors mb-1">{title}</h4>
         <p className="font-display text-lg md:text-xl font-black uppercase tracking-tight text-white">{content}</p>
       </div>
-    </Wrapper>
+    </>
+  );
+
+  if (link) {
+    return (
+      <a 
+        href={link} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="flex items-center gap-6 md:gap-8 group cursor-pointer"
+      >
+        {contentElement}
+      </a>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-6 md:gap-8 group">
+      {contentElement}
+    </div>
   );
 }

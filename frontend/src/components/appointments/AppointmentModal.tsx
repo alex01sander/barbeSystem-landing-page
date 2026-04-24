@@ -89,7 +89,7 @@ export function AppointmentModal({ isOpen, onClose, selectedDate }: AppointmentM
       onClose();
       resetForm();
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { error?: string } } }) => {
       setError(err.response?.data?.error || "Erro ao criar agendamento");
     }
   });

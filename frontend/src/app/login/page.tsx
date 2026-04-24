@@ -30,8 +30,9 @@ export default function LoginPage() {
       localStorage.setItem("barber-user", JSON.stringify(data.user));
 
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.message || "Falha na autenticação. Verifique os dados.");
+    } catch (err) {
+      const errorMsg = (err as Error).message || "Falha na autenticação. Verifique os dados.";
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

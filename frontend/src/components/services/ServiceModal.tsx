@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { X, Scissors, Clock, DollarSign, Tag } from "lucide-react";
 import { createService, updateService } from "@/services/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { Service } from "@/types";
+import { Service, CreateServiceDTO, UpdateServiceDTO } from "@/types";
 
 interface ServiceModalProps {
   isOpen: boolean;
@@ -31,16 +31,16 @@ export function ServiceModal({ isOpen, onClose, serviceToEdit }: ServiceModalPro
   }, [serviceToEdit]);
 
   const mutation = useMutation({
-    mutationFn: (data: any) => 
+    mutationFn: (data: CreateServiceDTO | UpdateServiceDTO) => 
       serviceToEdit 
-        ? updateService(serviceToEdit.id, data) 
-        : createService(data),
+        ? updateService(serviceToEdit.id, data as UpdateServiceDTO) 
+        : createService(data as CreateServiceDTO),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["services"] });
       onClose();
       resetForm();
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { error?: string } } }) => {
       setError(err.response?.data?.error || "Erro ao salvar serviço");
     }
   });

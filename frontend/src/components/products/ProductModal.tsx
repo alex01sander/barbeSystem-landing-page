@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { X, Package, DollarSign, Database, Tag } from "lucide-react";
 import { createProduct, updateProduct } from "@/services/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { Product } from "@/types";
+import { Product, CreateProductDTO, UpdateProductDTO } from "@/types";
 
 interface ProductModalProps {
   isOpen: boolean;
@@ -35,16 +35,16 @@ export function ProductModal({ isOpen, onClose, productToEdit }: ProductModalPro
   }, [productToEdit]);
 
   const mutation = useMutation({
-    mutationFn: (data: any) => 
+    mutationFn: (data: CreateProductDTO | UpdateProductDTO) => 
       productToEdit 
-        ? updateProduct(productToEdit.id, data) 
-        : createProduct(data),
+        ? updateProduct(productToEdit.id, data as UpdateProductDTO) 
+        : createProduct(data as CreateProductDTO),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
       onClose();
       resetForm();
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { error?: string } } }) => {
       setError(err.response?.data?.error || "Erro ao salvar produto");
     }
   });

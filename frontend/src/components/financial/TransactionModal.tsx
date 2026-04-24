@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { X, DollarSign, Tag, FileText, Calendar } from "lucide-react";
 import { createTransaction } from "@/services/api";
-import { TransactionType, TransactionCategory } from "@/types";
+import { TransactionType, TransactionCategory, CreateTransactionDTO } from "@/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { format } from "date-fns";
 
@@ -23,14 +23,14 @@ export function TransactionModal({ isOpen, onClose }: TransactionModalProps) {
   const [error, setError] = useState("");
 
   const mutation = useMutation({
-    mutationFn: createTransaction,
+    mutationFn: (data: CreateTransactionDTO) => createTransaction(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["financial-summary"] });
       queryClient.invalidateQueries({ queryKey: ["financial-transactions"] });
       onClose();
       resetForm();
     },
-    onError: (err: any) => {
+    onError: (err: { response?: { data?: { error?: string } } }) => {
       setError(err.response?.data?.error || "Erro ao registrar movimentação");
     }
   });
