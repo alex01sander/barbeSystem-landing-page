@@ -19,20 +19,27 @@ export function BarberModal({ isOpen, onClose, barberToEdit }: BarberModalProps)
   
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | undefined>(undefined);
   const [isActive, setIsActive] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  // Ajuste de estado durante a renderização para evitar cascading renders
+  const [prevBarber, setPrevBarber] = useState(barberToEdit);
+
+  if (barberToEdit !== prevBarber) {
+    setPrevBarber(barberToEdit);
     if (barberToEdit) {
       setName(barberToEdit.name);
       setAge(barberToEdit.age?.toString() || "");
-      setPhotoUrl(barberToEdit.photoUrl || null);
+      setPhotoUrl(barberToEdit.photoUrl || undefined);
       setIsActive(barberToEdit.isActive);
     } else {
-      resetForm();
+      setName("");
+      setAge("");
+      setPhotoUrl(undefined);
+      setIsActive(true);
     }
-  }, [barberToEdit]);
+  }
 
   const mutation = useMutation({
     mutationFn: (data: CreateBarberDTO | UpdateBarberDTO) => 
@@ -52,7 +59,7 @@ export function BarberModal({ isOpen, onClose, barberToEdit }: BarberModalProps)
   function resetForm() {
     setName("");
     setAge("");
-    setPhotoUrl(null);
+    setPhotoUrl(undefined);
     setIsActive(true);
     setError("");
   }
@@ -69,7 +76,7 @@ export function BarberModal({ isOpen, onClose, barberToEdit }: BarberModalProps)
   };
 
   const removePhoto = () => {
-    setPhotoUrl(null);
+    setPhotoUrl(undefined);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 

@@ -22,7 +22,11 @@ export function ProductModal({ isOpen, onClose, productToEdit }: ProductModalPro
   const [unit, setUnit] = useState("un");
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  // Ajuste de estado durante a renderização para evitar cascading renders
+  const [prevProduct, setPrevProduct] = useState(productToEdit);
+
+  if (productToEdit !== prevProduct) {
+    setPrevProduct(productToEdit);
     if (productToEdit) {
       setName(productToEdit.name);
       setDescription(productToEdit.description || "");
@@ -30,9 +34,13 @@ export function ProductModal({ isOpen, onClose, productToEdit }: ProductModalPro
       setStock(productToEdit.stock.toString());
       setUnit(productToEdit.unit);
     } else {
-      resetForm();
+      setName("");
+      setDescription("");
+      setPrice("");
+      setStock("");
+      setUnit("UN");
     }
-  }, [productToEdit]);
+  }
 
   const mutation = useMutation({
     mutationFn: (data: CreateProductDTO | UpdateProductDTO) => 
@@ -72,7 +80,8 @@ export function ProductModal({ isOpen, onClose, productToEdit }: ProductModalPro
       description,
       price: parseFloat(price),
       stock: parseInt(stock),
-      unit
+      unit,
+      isActive: true
     });
   }
 

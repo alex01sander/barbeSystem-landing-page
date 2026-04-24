@@ -43,7 +43,14 @@ export async function getProducts(): Promise<Product[]> {
 export async function createProduct(productData: CreateProductDTO): Promise<Product> {
   const { data, error } = await supabase
     .from("products")
-    .insert([productData])
+    .insert([{
+      name: productData.name,
+      description: productData.description,
+      price: productData.price,
+      stock: productData.stock,
+      unit: productData.unit,
+      is_active: true
+    }])
     .select()
     .single();
   
@@ -79,26 +86,14 @@ export async function createSale(saleData: CreateSaleDTO): Promise<Sale> {
   
   const { data: sale, error: saleError } = await supabase
     .from("sales")
-    .insert([{
-      barber_id: saleInfo.barberId,
-      payment_method: saleInfo.paymentMethod,
-      notes: saleInfo.notes
-    }])
+    .insert([saleInfo])
     .select()
     .single();
   
   if (saleError) throw saleError;
 
   if (items && items.length > 0) {
-    const itemsWithSaleId = items.map(item => ({ 
-      sale_id: sale.id,
-      type: item.type,
-      service_id: item.serviceId,
-      product_id: item.productId,
-      name: item.name,
-      price: item.price,
-      quantity: item.quantity
-    }));
+    const itemsWithSaleId = items.map(item => ({ ...item, saleId: sale.id }));
     const { error: itemsError } = await supabase
       .from("sale_items")
       .insert(itemsWithSaleId);
@@ -128,10 +123,7 @@ export async function getBarbers(): Promise<Barber[]> {
     .order("name");
   
   if (error) throw error;
-  return (data || []).map(b => ({
-    ...b,
-    photoUrl: b.photo_url
-  })) as Barber[];
+  return data as Barber[];
 }
 
 export async function createBarber(barberData: CreateBarberDTO): Promise<Barber> {
@@ -140,37 +132,26 @@ export async function createBarber(barberData: CreateBarberDTO): Promise<Barber>
     .insert([{
       name: barberData.name,
       age: barberData.age,
-      photo_url: barberData.photoUrl
+      photoUrl: barberData.photoUrl,
+      isActive: true
     }])
     .select()
     .single();
   
   if (error) throw error;
-  return {
-    ...data,
-    photoUrl: data.photo_url
-  } as Barber;
+  return data as Barber;
 }
 
 export async function updateBarber(id: string, barberData: UpdateBarberDTO): Promise<Barber> {
-  const updateData: any = { ...barberData };
-  if (barberData.photoUrl) {
-    updateData.photo_url = barberData.photoUrl;
-    delete updateData.photoUrl;
-  }
-
   const { data, error } = await supabase
     .from("barbers")
-    .update(updateData)
+    .update(barberData)
     .eq("id", id)
     .select()
     .single();
   
   if (error) throw error;
-  return {
-    ...data,
-    photoUrl: data.photo_url
-  } as Barber;
+  return data as Barber;
 }
 
 export async function deleteBarber(id: string): Promise<void> {
@@ -232,42 +213,24 @@ export async function getClients(): Promise<Client[]> {
 export async function createClient(clientData: CreateClientDTO): Promise<Client> {
   const { data, error } = await supabase
     .from("clients")
-    .insert([{
-      name: clientData.name,
-      phone: clientData.phone,
-      email: clientData.email,
-      birth_date: clientData.birthDate,
-      notes: clientData.notes
-    }])
+    .insert([clientData])
     .select()
     .single();
   
   if (error) throw error;
-  return {
-    ...data,
-    birthDate: data.birth_date
-  } as Client;
+  return data as Client;
 }
 
 export async function updateClient(id: string, clientData: UpdateClientDTO): Promise<Client> {
-  const updateData: any = { ...clientData };
-  if (clientData.birthDate) {
-    updateData.birth_date = clientData.birthDate;
-    delete updateData.birthDate;
-  }
-
   const { data, error } = await supabase
     .from("clients")
-    .update(updateData)
+    .update(clientData)
     .eq("id", id)
     .select()
     .single();
   
   if (error) throw error;
-  return {
-    ...data,
-    birthDate: data.birth_date
-  } as Client;
+  return data as Client;
 }
 
 export async function deleteClient(id: string): Promise<void> {
@@ -288,10 +251,7 @@ export async function getServices(): Promise<Service[]> {
     .order("name");
   
   if (error) throw error;
-  return (data || []).map(s => ({
-    ...s,
-    durationMinutes: s.duration_minutes
-  })) as Service[];
+  return data as Service[];
 }
 
 export async function createService(serviceData: CreateServiceDTO): Promise<Service> {
@@ -301,39 +261,26 @@ export async function createService(serviceData: CreateServiceDTO): Promise<Serv
       name: serviceData.name,
       description: serviceData.description,
       price: serviceData.price,
-      duration_minutes: serviceData.durationMinutes
+      durationMinutes: serviceData.durationMinutes,
+      isActive: true
     }])
     .select()
     .single();
   
   if (error) throw error;
-  
-  // Mapear de volta para camelCase se o banco retornar snake_case
-  return {
-    ...data,
-    durationMinutes: data.duration_minutes
-  } as Service;
+  return data as Service;
 }
 
 export async function updateService(id: string, serviceData: UpdateServiceDTO): Promise<Service> {
-  const updateData: any = { ...serviceData };
-  if (serviceData.durationMinutes) {
-    updateData.duration_minutes = serviceData.durationMinutes;
-    delete updateData.durationMinutes;
-  }
-
   const { data, error } = await supabase
     .from("services")
-    .update(updateData)
+    .update(serviceData)
     .eq("id", id)
     .select()
     .single();
   
   if (error) throw error;
-  return {
-    ...data,
-    durationMinutes: data.duration_minutes
-  } as Service;
+  return data as Service;
 }
 
 export async function deleteService(id: string): Promise<void> {
@@ -360,23 +307,19 @@ export async function getAppointments(date?: string, barberId?: string, startDat
   const { data, error } = await query.order("date");
   
   if (error) throw error;
-  return (data || []).map(a => ({
-    ...a,
-    clientId: a.client_id,
-    barberId: a.barber_id,
-    serviceId: a.service_id
-  })) as Appointment[];
+  return data as Appointment[];
 }
 
 export async function createAppointment(appointmentData: CreateAppointmentDTO): Promise<Appointment> {
   const { data, error } = await supabase
     .from("appointments")
     .insert([{
-      client_id: appointmentData.clientId,
-      barber_id: appointmentData.barberId,
-      service_id: appointmentData.serviceId,
+      clientId: appointmentData.clientId,
+      barberId: appointmentData.barberId,
+      serviceId: appointmentData.serviceId,
       date: appointmentData.date,
-      notes: appointmentData.notes
+      notes: appointmentData.notes,
+      status: 'PENDING'
     }])
     .select()
     .single();
@@ -467,25 +410,13 @@ export async function getTransactions(start: string, end: string): Promise<Finan
     .order("date", { ascending: false });
 
   if (error) throw error;
-  return (data || []).map(t => ({
-    ...t,
-    paymentMethod: t.payment_method,
-    appointmentId: t.appointment_id,
-    saleId: t.sale_id
-  })) as FinancialTransaction[];
+  return data as FinancialTransaction[];
 }
 
 export async function createTransaction(transactionData: CreateTransactionDTO): Promise<FinancialTransaction> {
   const { data, error } = await supabase
     .from("financial_transactions")
-    .insert([{
-      type: transactionData.type,
-      category: transactionData.category,
-      description: transactionData.description,
-      amount: transactionData.amount,
-      date: transactionData.date,
-      payment_method: transactionData.paymentMethod
-    }])
+    .insert([transactionData])
     .select()
     .single();
 

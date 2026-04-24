@@ -19,6 +19,7 @@ export interface CreateBarberDTO {
   name: string;
   photoUrl?: string;
   age?: number;
+  isActive?: boolean;
 }
 
 export interface UpdateBarberDTO {
@@ -51,6 +52,7 @@ export interface CreateServiceDTO {
   description?: string;
   price: number;
   durationMinutes: number;
+  isActive?: boolean;
 }
 
 export interface UpdateServiceDTO {
@@ -79,6 +81,7 @@ export interface CreateProductDTO {
   price: number;
   stock: number;
   unit?: string;
+  isActive?: boolean;
 }
 
 export interface UpdateProductDTO {
@@ -227,6 +230,7 @@ export interface CreateAppointmentDTO {
   serviceId: string;
   date: string;
   notes?: string;
+  status?: AppointmentStatus;
 }
 
 export interface PublicBookingDTO {

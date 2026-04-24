@@ -161,11 +161,11 @@ export default function DashboardLayout({
               <div className="p-4 border-t border-border bg-secondary/30">
                 <div className="flex items-center gap-3 px-4 py-3 mb-2">
                   <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted border border-border">
-                     {(user.user_metadata?.name || user.name || user.email || "U").charAt(0).toUpperCase()}
+                     {(user.user_metadata?.name || user.email || "U").charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
-                     <p className="text-xs font-bold truncate">{user.user_metadata?.name || user.name || user.email}</p>
-                     <p className="text-[10px] text-muted capitalize">{(user.user_metadata?.role || user.role || "Membro").toLowerCase()}</p>
+                     <p className="text-xs font-bold truncate">{user.user_metadata?.name || user.email}</p>
+                     <p className="text-[10px] text-muted capitalize">{(user.user_metadata?.role || "Membro").toLowerCase()}</p>
                   </div>
                 </div>
                 <button 
@@ -248,11 +248,11 @@ export default function DashboardLayout({
         <div className="p-4 border-t border-border">
           <div className="flex items-center gap-3 px-4 py-3 mb-2">
             <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted border border-border">
-               {(user.user_metadata?.name || user.name || user.email || "U").charAt(0).toUpperCase()}
+               {(user.user_metadata?.name || user.email || "U").charAt(0).toUpperCase()}
             </div>
             <div className="flex-1 min-w-0">
-               <p className="text-xs font-bold truncate">{user.user_metadata?.name || user.name || user.email}</p>
-               <p className="text-[10px] text-muted capitalize">{(user.user_metadata?.role || user.role || "Membro").toLowerCase()}</p>
+               <p className="text-xs font-bold truncate">{user.user_metadata?.name || user.email}</p>
+               <p className="text-[10px] text-muted capitalize">{(user.user_metadata?.role || "Membro").toLowerCase()}</p>
             </div>
           </div>
           <button 

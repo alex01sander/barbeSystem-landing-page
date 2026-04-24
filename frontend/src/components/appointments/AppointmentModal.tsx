@@ -34,11 +34,14 @@ export function AppointmentModal({ isOpen, onClose, selectedDate }: AppointmentM
     enabled: !!date && !!barberId
   });
 
-  useEffect(() => {
+  // Ajuste de estado durante a renderização para evitar cascading renders
+  const [prevSelectedDate, setPrevSelectedDate] = useState(selectedDate);
+  if (selectedDate !== prevSelectedDate) {
+    setPrevSelectedDate(selectedDate);
     if (selectedDate) {
       setDate(format(selectedDate, "yyyy-MM-dd"));
     }
-  }, [selectedDate]);
+  }
 
   // Lógica de Geração de Slots Disponíveis
   const availableSlots = useMemo(() => {
@@ -128,7 +131,8 @@ export function AppointmentModal({ isOpen, onClose, selectedDate }: AppointmentM
       barberId,
       serviceId,
       date: fullDate,
-      notes
+      notes,
+      status: 'PENDING'
     });
   }
 

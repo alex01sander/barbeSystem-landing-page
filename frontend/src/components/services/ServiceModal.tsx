@@ -19,16 +19,21 @@ export function ServiceModal({ isOpen, onClose, serviceToEdit }: ServiceModalPro
   const [price, setPrice] = useState("");
   const [durationMinutes, setDurationMinutes] = useState("");
   const [error, setError] = useState("");
+  // Padrao para sincronizar props com estado sem useEffect (evita cascading renders)
+  const [prevService, setPrevService] = useState(serviceToEdit);
 
-  useEffect(() => {
+  if (serviceToEdit !== prevService) {
+    setPrevService(serviceToEdit);
     if (serviceToEdit) {
       setName(serviceToEdit.name);
       setPrice(serviceToEdit.price.toString());
       setDurationMinutes(serviceToEdit.durationMinutes.toString());
     } else {
-      resetForm();
+      setName("");
+      setPrice("");
+      setDurationMinutes("");
     }
-  }, [serviceToEdit]);
+  }
 
   const mutation = useMutation({
     mutationFn: (data: CreateServiceDTO | UpdateServiceDTO) => 
@@ -65,6 +70,7 @@ export function ServiceModal({ isOpen, onClose, serviceToEdit }: ServiceModalPro
       name,
       price: parseFloat(price),
       durationMinutes: parseInt(durationMinutes),
+      isActive: true
     });
   }
 
