@@ -1,16 +1,11 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { getBarbers } from "@/services/api";
-import { DEFAULT_BARBERS } from "@/constants/data";
+import { useCachedQuery } from "@/hooks/useCachedQuery";
 import { motion, Variants } from "framer-motion";
 
 export function Team() {
-  const { data: barbers } = useQuery({
-    queryKey: ["public-barbers"],
-    queryFn: getBarbers,
-    initialData: DEFAULT_BARBERS,
-  });
+  const { data: barbers } = useCachedQuery("public-barbers", getBarbers);
 
   const container: Variants = {
     hidden: { opacity: 0 },

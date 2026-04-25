@@ -54,10 +54,15 @@ export function MobileBooking() {
               </div>
             </div>
 
-            <button className="flex items-center gap-4 px-8 py-4 border border-white/10 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all duration-500 group">
+            <a 
+              href="https://barbe-system-landing-page.vercel.app/#agendamento"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-4 px-8 py-4 border border-white/10 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white hover:text-black transition-all duration-500 group"
+            >
               <Share2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
               Compartilhar Link
-            </button>
+            </a>
           </motion.div>
 
           {/* Right Content - QR Code Card */}
@@ -86,7 +91,7 @@ export function MobileBooking() {
                 {/* QR Code Placeholder */}
                 <div className="relative p-4 bg-white rounded-xl shadow-inner">
                   <img 
-                    src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://idalgocortes.com.br/agendamento&color=000000" 
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://barbe-system-landing-page.vercel.app/%23agendamento&color=000000" 
                     alt="QR Code Agendamento"
                     className="w-[200px] h-[200px] md:w-[250px] md:h-[250px] grayscale"
                   />
@@ -95,7 +100,14 @@ export function MobileBooking() {
 
                 <div className="space-y-2">
                   <p className="text-[8px] font-bold uppercase tracking-[0.4em] text-zinc-700">ou acesse direto:</p>
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white hover:text-zinc-400 cursor-pointer transition-colors italic">/agendamentos</p>
+                  <a 
+                    href="https://barbe-system-landing-page.vercel.app/#agendamento"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[10px] font-black uppercase tracking-[0.3em] text-white hover:text-zinc-400 cursor-pointer transition-colors italic block"
+                  >
+                    barbe-system-landing-page.vercel.app
+                  </a>
                 </div>
               </div>
             </div>

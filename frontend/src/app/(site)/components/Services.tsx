@@ -1,17 +1,12 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { getServices } from "@/services/api";
-import { DEFAULT_SERVICES } from "@/constants/data";
+import { useCachedQuery } from "@/hooks/useCachedQuery";
 import { motion, Variants } from "framer-motion";
 import { Clock } from "lucide-react";
 
 export function Services() {
-  const { data: services } = useQuery({
-    queryKey: ["public-services"],
-    queryFn: getServices,
-    initialData: DEFAULT_SERVICES,
-  });
+  const { data: services } = useCachedQuery("public-services", getServices);
 
   const container: Variants = {
     hidden: { opacity: 0 },
