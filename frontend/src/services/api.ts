@@ -44,12 +44,15 @@ export async function createProduct(productData: CreateProductDTO): Promise<Prod
   const { data, error } = await supabase
     .from("products")
     .insert([{
+      id: crypto.randomUUID(),
       name: productData.name,
       description: productData.description,
       price: productData.price,
       stock: productData.stock,
       unit: productData.unit,
-      is_active: true
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }])
     .select()
     .single();
@@ -83,17 +86,25 @@ export async function deleteProduct(id: string): Promise<void> {
 
 export async function createSale(saleData: CreateSaleDTO): Promise<Sale> {
   const { items, ...saleInfo } = saleData;
+  const saleId = crypto.randomUUID();
+  const now = new Date().toISOString();
   
   const { data: sale, error: saleError } = await supabase
     .from("sales")
-    .insert([saleInfo])
+    .insert([{ id: saleId, ...saleInfo, createdAt: now, updatedAt: now }])
     .select()
     .single();
   
   if (saleError) throw saleError;
 
   if (items && items.length > 0) {
-    const itemsWithSaleId = items.map(item => ({ ...item, saleId: sale.id }));
+    const itemsWithSaleId = items.map(item => ({
+      id: crypto.randomUUID(),
+      ...item,
+      saleId: sale.id,
+      createdAt: now,
+      updatedAt: now
+    }));
     const { error: itemsError } = await supabase
       .from("sale_items")
       .insert(itemsWithSaleId);
@@ -130,10 +141,13 @@ export async function createBarber(barberData: CreateBarberDTO): Promise<Barber>
   const { data, error } = await supabase
     .from("barbers")
     .insert([{
+      id: crypto.randomUUID(),
       name: barberData.name,
       age: barberData.age,
       photoUrl: barberData.photoUrl,
-      isActive: true
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }])
     .select()
     .single();
@@ -213,7 +227,12 @@ export async function getClients(): Promise<Client[]> {
 export async function createClient(clientData: CreateClientDTO): Promise<Client> {
   const { data, error } = await supabase
     .from("clients")
-    .insert([clientData])
+    .insert([{
+      id: crypto.randomUUID(),
+      ...clientData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }])
     .select()
     .single();
   
@@ -258,11 +277,14 @@ export async function createService(serviceData: CreateServiceDTO): Promise<Serv
   const { data, error } = await supabase
     .from("services")
     .insert([{
+      id: crypto.randomUUID(),
       name: serviceData.name,
       description: serviceData.description,
       price: serviceData.price,
       durationMinutes: serviceData.durationMinutes,
-      isActive: true
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }])
     .select()
     .single();
@@ -314,12 +336,15 @@ export async function createAppointment(appointmentData: CreateAppointmentDTO): 
   const { data, error } = await supabase
     .from("appointments")
     .insert([{
+      id: crypto.randomUUID(),
       clientId: appointmentData.clientId,
       barberId: appointmentData.barberId,
       serviceId: appointmentData.serviceId,
       date: appointmentData.date,
       notes: appointmentData.notes,
-      status: 'PENDING'
+      status: 'PENDING',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     }])
     .select()
     .single();
@@ -416,7 +441,12 @@ export async function getTransactions(start: string, end: string): Promise<Finan
 export async function createTransaction(transactionData: CreateTransactionDTO): Promise<FinancialTransaction> {
   const { data, error } = await supabase
     .from("financial_transactions")
-    .insert([transactionData])
+    .insert([{
+      id: crypto.randomUUID(),
+      ...transactionData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }])
     .select()
     .single();
 
@@ -427,42 +457,46 @@ export async function createTransaction(transactionData: CreateTransactionDTO): 
 /* PUBLIC SITE METHODS */
 
 export async function getAvailableSlots(barberId: string, serviceId: string, date: string): Promise<string[]> {
-  // Nota: Lógica complexa que exige saber horários de funcionamento e agendamentos existentes.
-  // No Express isso era calculado. Aqui vamos precisar de uma lógica similar no client ou RPC.
-  
-  const { data: schedule, error: schedError } = await supabase
-    .from("barber_schedules")
-    .select("*")
-    .eq("barberId", barberId)
-    .eq("dayOfWeek", new Date(date).getDay())
-    .single();
+  // Horário padrão: segunda a sábado, 9h às 18h
+  // Domingos (dayOfWeek === 0) não têm atendimento
+  const dayOfWeek = new Date(date + 'T12:00:00').getDay(); // Usando meio-dia para evitar problemas de timezone
+  if (dayOfWeek === 0) return []; // Domingo sem atendimento
 
-  if (schedError || !schedule || !schedule.isWorking) return [];
+  const START_HOUR = 9;   // 09:00
+  const END_HOUR = 18;    // 18:00
+  const SLOT_MINUTES = 30; // Slots de 30 minutos
 
+  // Buscar agendamentos existentes para o barbeiro neste dia
   const { data: appointments, error: apptError } = await supabase
     .from("appointments")
-    .select("date, service:services(durationMinutes)")
+    .select("date")
     .eq("barberId", barberId)
-    .gte("date", `${date}T00:00:00Z`)
-    .lte("date", `${date}T23:59:59Z`);
+    .gte("date", `${date}T00:00:00`)
+    .lte("date", `${date}T23:59:59`)
+    .neq("status", "CANCELLED");
 
   if (apptError) throw apptError;
 
-  // Lógica simplificada de slots (ex: a cada 30 min)
+  // Gerar todos os slots do dia
   const slots: string[] = [];
-  const current = new Date(`${date}T${schedule.startTime}:00`);
-  const end = new Date(`${date}T${schedule.endTime}:00`);
+  const startTime = new Date(`${date}T${String(START_HOUR).padStart(2, '0')}:00:00`);
+  const endTime = new Date(`${date}T${String(END_HOUR).padStart(2, '0')}:00:00`);
+  const current = new Date(startTime);
 
-  while (current < end) {
-    const timeString = current.toTimeString().substring(0, 5);
-    // Verificar se o slot está livre
-    const isBusy = (appointments as { date: string }[] || []).some((a) => {
-        const aStart = new Date(a.date).toTimeString().substring(0, 5);
-        return aStart === timeString;
-    });
+  // Horários já ocupados
+  const busyTimes = new Set(
+    (appointments || []).map(a => {
+      const d = new Date(a.date);
+      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    })
+  );
 
-    if (!isBusy) slots.push(timeString);
-    current.setMinutes(current.getMinutes() + 30);
+  while (current < endTime) {
+    const timeString = `${String(current.getHours()).padStart(2, '0')}:${String(current.getMinutes()).padStart(2, '0')}`;
+    if (!busyTimes.has(timeString)) {
+      slots.push(timeString);
+    }
+    current.setMinutes(current.getMinutes() + SLOT_MINUTES);
   }
 
   return slots;
@@ -471,7 +505,13 @@ export async function getAvailableSlots(barberId: string, serviceId: string, dat
 export async function createPublicAppointment(bookingData: PublicBookingDTO): Promise<Appointment> {
   const { data, error } = await supabase
     .from("appointments")
-    .insert([bookingData])
+    .insert([{
+      id: crypto.randomUUID(),
+      ...bookingData,
+      status: 'PENDING',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }])
     .select()
     .single();
   
