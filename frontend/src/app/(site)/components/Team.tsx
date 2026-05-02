@@ -49,7 +49,7 @@ export function Team() {
                   <img 
                     src={barber.photoUrl} 
                     alt={barber.name} 
-                    className="w-full h-full object-cover grayscale transition-all duration-1000 group-hover:grayscale-0 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">

@@ -20,6 +20,7 @@ import { format, addDays, startOfToday, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 export function Booking() {
+  const [mounted, setMounted] = useState(false);
   const [step, setStep] = useState(1);
   const [selection, setSelection] = useState({
     serviceId: "",
@@ -34,6 +35,10 @@ export function Booking() {
 
   // Generate next 14 days for the horizontal selector
   const availableDates = Array.from({ length: 14 }, (_, i) => addDays(startOfToday(), i));
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { data: services } = useQuery({ queryKey: ["public-services"], queryFn: getServices });
   const { data: barbers } = useQuery({ queryKey: ["public-barbers"], queryFn: getBarbers });
@@ -65,6 +70,8 @@ export function Booking() {
     { id: 3, name: "Data/Hora", icon: <CalendarDays className="w-4 h-4" /> },
     { id: 4, name: "Confirmar", icon: <Check className="w-4 h-4" /> },
   ];
+
+  if (!mounted) return null;
 
   return (
     <section id="agendamento" className="relative py-24 md:py-40 px-6 md:px-8 bg-zinc-950 border-y border-white/5 overflow-hidden">

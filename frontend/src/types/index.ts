@@ -237,6 +237,7 @@ export interface PublicBookingDTO {
   serviceId: string;
   barberId: string;
   date: string;
+  time: string;
   clientName: string;
   clientPhone: string;
   notes?: string;

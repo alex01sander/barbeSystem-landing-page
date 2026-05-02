@@ -503,11 +503,52 @@ export async function getAvailableSlots(barberId: string, serviceId: string, dat
 }
 
 export async function createPublicAppointment(bookingData: PublicBookingDTO): Promise<Appointment> {
+  // 1. Encontrar ou criar o cliente
+  let clientId = "";
+  const { data: existingClients } = await supabase
+    .from("clients")
+    .select("id")
+    .eq("phone", bookingData.clientPhone)
+    .limit(1);
+    
+  if (existingClients && existingClients.length > 0) {
+    clientId = existingClients[0].id;
+  } else {
+    const { data: newClient, error: clientError } = await supabase
+      .from("clients")
+      .insert([{
+        id: crypto.randomUUID(),
+        name: bookingData.clientName,
+        phone: bookingData.clientPhone,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }])
+      .select()
+      .single();
+    if (clientError) throw clientError;
+    clientId = newClient.id;
+  }
+
+  // 2. Obter preço do serviço
+  const { data: service } = await supabase
+    .from("services")
+    .select("price")
+    .eq("id", bookingData.serviceId)
+    .single();
+
+  // 3. Combinar date e time
+  const combinedDate = new Date(`${bookingData.date}T${bookingData.time}:00`).toISOString();
+
   const { data, error } = await supabase
     .from("appointments")
     .insert([{
       id: crypto.randomUUID(),
-      ...bookingData,
+      clientId: clientId,
+      barberId: bookingData.barberId,
+      serviceId: bookingData.serviceId,
+      date: combinedDate,
+      totalPrice: service?.price || 0,
+      notes: bookingData.notes,
       status: 'PENDING',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()

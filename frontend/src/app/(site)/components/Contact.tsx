@@ -55,7 +55,7 @@ export function Contact() {
             className="relative h-[350px] md:h-[500px] lg:h-[600px] bg-zinc-950 border border-white/5 overflow-hidden group"
           >
              {/* Map Placeholder with stylization */}
-             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=2066')] bg-cover bg-center grayscale opacity-20 group-hover:opacity-30 transition-opacity duration-1000" />
+             <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?q=80&w=2066')] bg-cover bg-center opacity-20 group-hover:opacity-30 transition-opacity duration-1000" />
              <div className="relative w-full h-full flex flex-col items-center justify-center space-y-6">
                 <div className="w-16 h-16 rounded-full border border-white/20 flex items-center justify-center animate-pulse">
                   <MapPin className="w-6 h-6 text-white" />

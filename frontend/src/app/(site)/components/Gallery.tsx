@@ -38,7 +38,7 @@ export function Gallery() {
               <img 
                 src={url} 
                 alt={`Corte Editorial ${idx + 1}`}
-                className="w-full h-full object-cover grayscale transition-all duration-1000 group-hover:grayscale-0 group-hover:scale-110"
+                className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110"
               />
               
               <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center backdrop-blur-[2px]">
