@@ -457,16 +457,13 @@ export async function createTransaction(transactionData: CreateTransactionDTO): 
 /* PUBLIC SITE METHODS */
 
 export async function getAvailableSlots(barberId: string, serviceId: string, date: string): Promise<string[]> {
-  // Horário padrão: segunda a sábado, 9h às 18h
-  // Domingos (dayOfWeek === 0) não têm atendimento
-  const dayOfWeek = new Date(date + 'T12:00:00').getDay(); // Usando meio-dia para evitar problemas de timezone
-  if (dayOfWeek === 0) return []; // Domingo sem atendimento
+  const dayOfWeek = new Date(date + 'T12:00:00').getDay();
+  if (dayOfWeek === 0) return []; 
 
   const START_HOUR = 9;   // 09:00
   const END_HOUR = 18;    // 18:00
-  const SLOT_MINUTES = 30; // Slots de 30 minutos
+  const SLOT_MINUTES = 30;
 
-  // Buscar agendamentos existentes para o barbeiro neste dia
   const { data: appointments, error: apptError } = await supabase
     .from("appointments")
     .select("date")
@@ -477,13 +474,11 @@ export async function getAvailableSlots(barberId: string, serviceId: string, dat
 
   if (apptError) throw apptError;
 
-  // Gerar todos os slots do dia
   const slots: string[] = [];
   const startTime = new Date(`${date}T${String(START_HOUR).padStart(2, '0')}:00:00`);
   const endTime = new Date(`${date}T${String(END_HOUR).padStart(2, '0')}:00:00`);
   const current = new Date(startTime);
 
-  // Horários já ocupados
   const busyTimes = new Set(
     (appointments || []).map(a => {
       const d = new Date(a.date);
@@ -503,13 +498,19 @@ export async function getAvailableSlots(barberId: string, serviceId: string, dat
 }
 
 export async function createPublicAppointment(bookingData: PublicBookingDTO): Promise<Appointment> {
-  // 1. Encontrar ou criar o cliente
+  // 1. Tentar encontrar ou criar o cliente
   let clientId = "";
-  const { data: existingClients } = await supabase
+  
+  // Como as políticas RLS do Supabase podem bloquear SELECT ou INSERT públicos,
+  // se falhar aqui, você precisará ir no painel do Supabase e liberar acesso anônimo (anon)
+  // para as tabelas 'clients' e 'appointments' (pelo menos INSERT e SELECT por telefone).
+  const { data: existingClients, error: selectClientError } = await supabase
     .from("clients")
     .select("id")
     .eq("phone", bookingData.clientPhone)
     .limit(1);
+    
+  if (selectClientError) throw selectClientError;
     
   if (existingClients && existingClients.length > 0) {
     clientId = existingClients[0].id;
@@ -529,16 +530,19 @@ export async function createPublicAppointment(bookingData: PublicBookingDTO): Pr
     clientId = newClient.id;
   }
 
-  // 2. Obter preço do serviço
-  const { data: service } = await supabase
+  // 2. Obter o preço do serviço
+  const { data: service, error: serviceError } = await supabase
     .from("services")
     .select("price")
     .eq("id", bookingData.serviceId)
     .single();
+    
+  if (serviceError) throw serviceError;
 
-  // 3. Combinar date e time
+  // 3. Combinar data e hora
   const combinedDate = new Date(`${bookingData.date}T${bookingData.time}:00`).toISOString();
 
+  // 4. Inserir o agendamento
   const { data, error } = await supabase
     .from("appointments")
     .insert([{
